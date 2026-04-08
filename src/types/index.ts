@@ -33,6 +33,16 @@ export interface Customer {
   created_at: string
 }
 
+export interface Category {
+  id: string
+  workspace_id: string
+  name: string
+  parent_id: string | null
+  sort_order: number
+  created_at: string
+  children?: Category[]
+}
+
 export interface Product {
   id: string
   workspace_id: string
@@ -40,7 +50,9 @@ export interface Product {
   unit_price: number
   unit: string | null
   description: string | null
+  category_id: string | null
   created_at: string
+  category?: Category
 }
 
 export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled'

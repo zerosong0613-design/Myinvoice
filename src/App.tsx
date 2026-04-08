@@ -16,6 +16,7 @@ import CreditNoteForm from '@/pages/CreditNoteForm'
 import CreditNoteDetail from '@/pages/CreditNoteDetail'
 import Customers from '@/pages/Customers'
 import Products from '@/pages/Products'
+import Categories from '@/pages/Categories'
 import Statistics from '@/pages/Statistics'
 import SettingsPage from '@/pages/Settings'
 import WorkspaceSetup from '@/pages/WorkspaceSetup'
@@ -49,6 +50,7 @@ export default function App() {
             <Route path="credit-notes/:id/edit" element={<CreditNoteForm key="edit" />} />
             <Route path="customers" element={<Customers />} />
             <Route path="products" element={<Products />} />
+            <Route path="categories" element={<Categories />} />
             <Route path="statistics" element={<Statistics />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>

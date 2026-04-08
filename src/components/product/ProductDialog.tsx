@@ -11,19 +11,42 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import type { Product } from '@/types'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import type { Product, Category } from '@/types'
 
 interface ProductFormData {
   name: string
   unit_price: number
   unit: string | null
   description: string | null
+  category_id: string | null
+}
+
+function flattenCategories(
+  categories: Category[],
+  depth = 0
+): { category: Category; depth: number }[] {
+  const result: { category: Category; depth: number }[] = []
+  for (const cat of categories) {
+    result.push({ category: cat, depth })
+    if (cat.children?.length) {
+      result.push(...flattenCategories(cat.children, depth + 1))
+    }
+  }
+  return result
 }
 
 interface ProductDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   product?: Product | null
+  categories?: Category[]
   onSave: (data: ProductFormData) => Promise<void>
 }
 
@@ -31,6 +54,7 @@ export default function ProductDialog({
   open,
   onOpenChange,
   product,
+  categories = [],
   onSave,
 }: ProductDialogProps) {
   const isEdit = !!product
@@ -39,7 +63,10 @@ export default function ProductDialog({
   const [unitPrice, setUnitPrice] = useState('')
   const [unit, setUnit] = useState('')
   const [description, setDescription] = useState('')
+  const [categoryId, setCategoryId] = useState<string>('none')
   const [saving, setSaving] = useState(false)
+
+  const flatOptions = flattenCategories(categories)
 
   useEffect(() => {
     if (open) {
@@ -47,6 +74,7 @@ export default function ProductDialog({
       setUnitPrice(product?.unit_price != null ? String(product.unit_price) : '')
       setUnit(product?.unit ?? '')
       setDescription(product?.description ?? '')
+      setCategoryId(product?.category_id ?? 'none')
     }
   }, [open, product])
 
@@ -59,6 +87,7 @@ export default function ProductDialog({
         unit_price: unitPrice ? Number(unitPrice) : 0,
         unit: unit.trim() || null,
         description: description.trim() || null,
+        category_id: categoryId === 'none' ? null : categoryId,
       })
       onOpenChange(false)
     } finally {
@@ -86,6 +115,25 @@ export default function ProductDialog({
               placeholder="품목명을 입력하세요"
               required
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label>카테고리</Label>
+            <Select value={categoryId} onValueChange={(v) => v && setCategoryId(v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="카테고리 선택" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">없음</SelectItem>
+                {flatOptions.map(({ category: cat, depth }) => (
+                  <SelectItem key={cat.id} value={cat.id}>
+                    {'  '.repeat(depth)}
+                    {depth > 0 ? 'ㄴ ' : ''}
+                    {cat.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">

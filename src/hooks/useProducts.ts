@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase'
 import { useWorkspaceStore } from '@/store/useWorkspaceStore'
 import type { Product } from '@/types'
 
-type ProductInput = Omit<Product, 'id' | 'workspace_id' | 'created_at'>
+type ProductInput = Omit<Product, 'id' | 'workspace_id' | 'created_at' | 'category'>
 
 export function useProducts() {
   const { workspace } = useWorkspaceStore()
@@ -11,16 +11,22 @@ export function useProducts() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchProducts = useCallback(async () => {
+  const fetchProducts = useCallback(async (categoryId?: string | null) => {
     if (!workspace) return
     setLoading(true)
     setError(null)
     try {
-      const { data, error: fetchError } = await supabase
+      let query = supabase
         .from('products')
-        .select('*')
+        .select('*, category:categories(id, name)')
         .eq('workspace_id', workspace.id)
         .order('name')
+
+      if (categoryId) {
+        query = query.eq('category_id', categoryId)
+      }
+
+      const { data, error: fetchError } = await query
 
       if (fetchError) throw fetchError
       setProducts(data ?? [])

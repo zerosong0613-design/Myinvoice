@@ -3,6 +3,13 @@ import { Plus, Search, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   Table,
   TableBody,
   TableCell,
@@ -10,8 +17,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Badge } from '@/components/ui/badge'
 import ProductDialog from '@/components/product/ProductDialog'
 import { useProducts } from '@/hooks/useProducts'
+import { useCategories } from '@/hooks/useCategories'
 import { formatCurrency } from '@/lib/utils'
 import type { Product } from '@/types'
 
@@ -25,20 +34,28 @@ export default function Products() {
     deleteProduct,
   } = useProducts()
 
+  const { categories, categoryTree, fetchCategories } = useCategories()
+
   const [search, setSearch] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState<string>('all')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
 
   useEffect(() => {
     fetchProducts()
-  }, [fetchProducts])
+    fetchCategories()
+  }, [fetchProducts, fetchCategories])
 
   const filtered = useMemo(
     () =>
-      products.filter((p) =>
-        p.name.toLowerCase().includes(search.toLowerCase())
-      ),
-    [products, search]
+      products.filter((p) => {
+        const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase())
+        const matchesCategory =
+          categoryFilter === 'all' ||
+          (categoryFilter === 'uncategorized' ? !p.category_id : p.category_id === categoryFilter)
+        return matchesSearch && matchesCategory
+      }),
+    [products, search, categoryFilter]
   )
 
   const handleCreate = () => {
@@ -74,14 +91,30 @@ export default function Products() {
         </Button>
       </div>
 
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="품목명으로 검색"
-          className="pl-9"
-        />
+      <div className="flex items-center gap-3">
+        <div className="relative max-w-sm flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="품목명으로 검색"
+            className="pl-9"
+          />
+        </div>
+        <Select value={categoryFilter} onValueChange={(v) => v && setCategoryFilter(v)}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="전체 카테고리" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">전체 카테고리</SelectItem>
+            <SelectItem value="uncategorized">미분류</SelectItem>
+            {categories.map((cat) => (
+              <SelectItem key={cat.id} value={cat.id}>
+                {cat.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {loading ? (
@@ -98,6 +131,7 @@ export default function Products() {
             <TableHeader>
               <TableRow>
                 <TableHead>품목명</TableHead>
+                <TableHead>카테고리</TableHead>
                 <TableHead className="text-right">단가</TableHead>
                 <TableHead>단위</TableHead>
                 <TableHead>설명</TableHead>
@@ -109,6 +143,13 @@ export default function Products() {
                 <TableRow key={product.id}>
                   <TableCell className="font-medium">
                     {product.name}
+                  </TableCell>
+                  <TableCell>
+                    {product.category ? (
+                      <Badge variant="secondary">{product.category.name}</Badge>
+                    ) : (
+                      <span className="text-muted-foreground text-xs">-</span>
+                    )}
                   </TableCell>
                   <TableCell className="text-right">
                     {formatCurrency(product.unit_price)}
@@ -146,6 +187,7 @@ export default function Products() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         product={editingProduct}
+        categories={categoryTree}
         onSave={handleSave}
       />
     </div>

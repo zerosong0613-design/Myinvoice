@@ -6,6 +6,7 @@ import {
   FileMinus,
   Users,
   Package,
+  FolderTree,
   BarChart3,
   Settings,
   LogOut,
@@ -39,6 +40,7 @@ const navItems = [
   { to: '/credit-notes', icon: FileMinus, label: '신용전표' },
   { to: '/customers', icon: Users, label: '거래처' },
   { to: '/products', icon: Package, label: '품목' },
+  { to: '/categories', icon: FolderTree, label: '카테고리' },
   { to: '/statistics', icon: BarChart3, label: '통계' },
   { to: '/settings', icon: Settings, label: '설정' },
 ]

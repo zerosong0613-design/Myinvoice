@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create:*)",
+      "Bash(cp -r \"C:/Users/aimej/Downloads/myinvoice-temp/\"* \"C:/Users/aimej/Downloads/MyInvoice/\")",
+      "Bash(cp \"C:/Users/aimej/Downloads/myinvoice-temp/.gitignore\" \"C:/Users/aimej/Downloads/MyInvoice/\")",
+      "Bash(rm -rf \"C:/Users/aimej/Downloads/myinvoice-temp\")",
+      "Bash(npm install:*)",
+      "Bash(npx shadcn@latest init -d -y)"
+    ]
+  }
+}

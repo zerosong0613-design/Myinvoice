@@ -1,121 +1,59 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { TooltipProvider } from '@/components/ui/tooltip'
+import Login from '@/pages/auth/Login'
+import AuthGuard from '@/components/layout/AuthGuard'
+import Layout from '@/components/layout/Layout'
 
-function App() {
-  const [count, setCount] = useState(0)
+import Dashboard from '@/pages/Dashboard'
+import Invoices from '@/pages/Invoices'
+import InvoiceForm from '@/pages/InvoiceForm'
+import InvoiceDetail from '@/pages/InvoiceDetail'
+import Quotes from '@/pages/Quotes'
+import QuoteForm from '@/pages/QuoteForm'
+import QuoteDetail from '@/pages/QuoteDetail'
+import CreditNotes from '@/pages/CreditNotes'
+import CreditNoteForm from '@/pages/CreditNoteForm'
+import CreditNoteDetail from '@/pages/CreditNoteDetail'
+import Customers from '@/pages/Customers'
+import Products from '@/pages/Products'
+import Statistics from '@/pages/Statistics'
+import SettingsPage from '@/pages/Settings'
+import WorkspaceSetup from '@/pages/WorkspaceSetup'
 
+export default function App() {
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+    <BrowserRouter>
+      <TooltipProvider>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/workspace-setup" element={<WorkspaceSetup />} />
+          <Route
+            element={
+              <AuthGuard>
+                <Layout />
+              </AuthGuard>
+            }
+          >
+            <Route index element={<Dashboard />} />
+            <Route path="invoices" element={<Invoices />} />
+            <Route path="invoices/new" element={<InvoiceForm key="new" />} />
+            <Route path="invoices/:id" element={<InvoiceDetail />} />
+            <Route path="invoices/:id/edit" element={<InvoiceForm key="edit" />} />
+            <Route path="quotes" element={<Quotes />} />
+            <Route path="quotes/new" element={<QuoteForm key="new" />} />
+            <Route path="quotes/:id" element={<QuoteDetail />} />
+            <Route path="quotes/:id/edit" element={<QuoteForm key="edit" />} />
+            <Route path="credit-notes" element={<CreditNotes />} />
+            <Route path="credit-notes/new" element={<CreditNoteForm key="new" />} />
+            <Route path="credit-notes/:id" element={<CreditNoteDetail />} />
+            <Route path="credit-notes/:id/edit" element={<CreditNoteForm key="edit" />} />
+            <Route path="customers" element={<Customers />} />
+            <Route path="products" element={<Products />} />
+            <Route path="statistics" element={<Statistics />} />
+            <Route path="settings" element={<SettingsPage />} />
+          </Route>
+        </Routes>
+      </TooltipProvider>
+    </BrowserRouter>
   )
 }
-
-export default App

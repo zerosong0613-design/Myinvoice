@@ -76,6 +76,8 @@ export default function SendEmailDialog({
           body,
           pdfBase64,
           filename: `${docNumber}.pdf`,
+          resendApiKey: workspace.resend_api_key,
+          fromEmail: workspace.resend_from_email,
         }),
       })
 

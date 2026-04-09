@@ -192,6 +192,8 @@ export default function InvoiceDetail() {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({
+                    boltaApiKey: workspace.bolta_api_key,
+                    boltaCustomerKey: workspace.bolta_customer_key,
                     supplier: {
                       bizNumber: workspace.biz_number,
                       name: workspace.name,

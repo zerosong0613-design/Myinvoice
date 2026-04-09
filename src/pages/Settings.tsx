@@ -63,6 +63,16 @@ export default function Settings() {
   const [defaultDueDays, setDefaultDueDays] = useState(30)
   const [defaultMemo, setDefaultMemo] = useState('')
   const [defaultTaxType, setDefaultTaxType] = useState('exclusive')
+  // API 연동
+  const [boltaApiKey, setBoltaApiKey] = useState('')
+  const [boltaCustomerKey, setBoltaCustomerKey] = useState('')
+  const [resendApiKey, setResendApiKey] = useState('')
+  const [resendFromEmail, setResendFromEmail] = useState('')
+  // 입금 계좌
+  const [bankName, setBankName] = useState('')
+  const [accountNumber, setAccountNumber] = useState('')
+  const [accountHolder, setAccountHolder] = useState('')
+
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
 
@@ -90,6 +100,13 @@ export default function Settings() {
       setDefaultDueDays(workspace.default_due_days ?? 30)
       setDefaultMemo(workspace.default_memo ?? '')
       setDefaultTaxType(workspace.default_tax_type ?? 'exclusive')
+      setBoltaApiKey(workspace.bolta_api_key ?? '')
+      setBoltaCustomerKey(workspace.bolta_customer_key ?? '')
+      setResendApiKey(workspace.resend_api_key ?? '')
+      setResendFromEmail(workspace.resend_from_email ?? '')
+      setBankName(workspace.bank_name ?? '')
+      setAccountNumber(workspace.account_number ?? '')
+      setAccountHolder(workspace.account_holder ?? '')
     }
   }, [workspace])
 
@@ -144,6 +161,13 @@ export default function Settings() {
           default_due_days: defaultDueDays || 30,
           default_memo: defaultMemo.trim() || null,
           default_tax_type: defaultTaxType,
+          bolta_api_key: boltaApiKey.trim() || null,
+          bolta_customer_key: boltaCustomerKey.trim() || null,
+          resend_api_key: resendApiKey.trim() || null,
+          resend_from_email: resendFromEmail.trim() || null,
+          bank_name: bankName.trim() || null,
+          account_number: accountNumber.trim() || null,
+          account_holder: accountHolder.trim() || null,
         })
         .eq('id', workspace.id)
         .select()
@@ -204,6 +228,7 @@ export default function Settings() {
       <Tabs defaultValue="workspace">
         <TabsList>
           <TabsTrigger value="workspace">워크스페이스</TabsTrigger>
+          <TabsTrigger value="integrations">연동 설정</TabsTrigger>
           <TabsTrigger value="members">멤버 관리</TabsTrigger>
         </TabsList>
 
@@ -284,6 +309,107 @@ export default function Settings() {
                   rows={3}
                 />
                 <p className="text-xs text-muted-foreground">새 문서 작성 시 메모란에 자동 입력됩니다.</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {message && (
+            <div className={`rounded-md p-3 text-sm ${message.includes('저장되었습니다') ? 'bg-green-50 text-green-700' : 'bg-destructive/10 text-destructive'}`}>
+              {message}
+            </div>
+          )}
+          <div className="flex justify-end">
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? '저장 중...' : '저장'}
+            </Button>
+          </div>
+        </TabsContent>
+
+        {/* 연동 설정 탭 */}
+        <TabsContent value="integrations" className="space-y-4">
+          {/* 입금 계좌 */}
+          <Card>
+            <CardHeader>
+              <CardTitle>기본 입금 계좌</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                청구서·지급요청서에 표시되는 입금 계좌 정보입니다.
+              </p>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="space-y-2">
+                  <Label>은행명</Label>
+                  <Input value={bankName} onChange={(e) => setBankName(e.target.value)} placeholder="국민은행" />
+                </div>
+                <div className="space-y-2">
+                  <Label>계좌번호</Label>
+                  <Input value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} placeholder="000-000-000000" />
+                </div>
+                <div className="space-y-2">
+                  <Label>예금주</Label>
+                  <Input value={accountHolder} onChange={(e) => setAccountHolder(e.target.value)} placeholder="(주)회사명" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 이메일 발송 (Resend) */}
+          <Card>
+            <CardHeader>
+              <CardTitle>이메일 발송 설정</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                청구서·견적서를 이메일로 보내려면 <a href="https://resend.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Resend</a>에서 무료 API 키를 발급받으세요. (월 3,000통 무료)
+              </p>
+              <div className="space-y-2">
+                <Label>Resend API Key</Label>
+                <Input
+                  type="password"
+                  value={resendApiKey}
+                  onChange={(e) => setResendApiKey(e.target.value)}
+                  placeholder="re_xxxxxxxx..."
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>발신 이메일 (선택)</Label>
+                <Input
+                  type="email"
+                  value={resendFromEmail}
+                  onChange={(e) => setResendFromEmail(e.target.value)}
+                  placeholder="noreply@yourdomain.com (미입력 시 기본값 사용)"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 볼타 세금계산서 */}
+          <Card>
+            <CardHeader>
+              <CardTitle>세금계산서 연동 (볼타)</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                청구서에서 바로 전자세금계산서를 발행하려면 <a href="https://bolta.io" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">볼타</a>에서 무료 계정을 만들고 API 키를 발급받으세요.
+              </p>
+              <div className="space-y-2">
+                <Label>볼타 API Key</Label>
+                <Input
+                  type="password"
+                  value={boltaApiKey}
+                  onChange={(e) => setBoltaApiKey(e.target.value)}
+                  placeholder="test_xxxxxxxx 또는 live_xxxxxxxx"
+                />
+                <p className="text-xs text-muted-foreground">테스트 키(test_)로 먼저 시도한 후, 실제 발행 시 라이브 키(live_)를 사용하세요.</p>
+              </div>
+              <div className="space-y-2">
+                <Label>볼타 Customer Key</Label>
+                <Input
+                  type="password"
+                  value={boltaCustomerKey}
+                  onChange={(e) => setBoltaCustomerKey(e.target.value)}
+                  placeholder="customer_xxxxxxxx"
+                />
               </div>
             </CardContent>
           </Card>

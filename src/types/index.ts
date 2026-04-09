@@ -11,6 +11,13 @@ export interface Workspace {
   default_due_days: number | null
   default_memo: string | null
   default_tax_type: string | null
+  bolta_api_key: string | null
+  bolta_customer_key: string | null
+  resend_api_key: string | null
+  resend_from_email: string | null
+  bank_name: string | null
+  account_number: string | null
+  account_holder: string | null
   created_at: string
   deleted_at: string | null
 }

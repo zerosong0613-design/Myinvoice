@@ -47,6 +47,9 @@ export interface Category {
   children?: Category[]
 }
 
+export type ProductType = 'product' | 'service'
+export type RateType = 'unit' | 'hourly' | 'daily' | 'monthly' | 'project'
+
 export interface Product {
   id: string
   workspace_id: string
@@ -55,6 +58,8 @@ export interface Product {
   unit: string | null
   description: string | null
   category_id: string | null
+  type: ProductType
+  rate_type: RateType
   created_at: string
   category?: Category
 }
@@ -93,6 +98,7 @@ export interface InvoiceItem {
   unit_price: number
   amount: number
   sort_order: number
+  performer: string | null
 }
 
 export type QuoteStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired'
@@ -128,6 +134,7 @@ export interface QuoteItem {
   unit_price: number
   amount: number
   sort_order: number
+  performer: string | null
 }
 
 export type CreditNoteStatus = 'draft' | 'sent' | 'applied'
@@ -162,6 +169,7 @@ export interface CreditNoteItem {
   unit_price: number
   amount: number
   sort_order: number
+  performer: string | null
 }
 
 export interface WorkspaceInvoiceStats {

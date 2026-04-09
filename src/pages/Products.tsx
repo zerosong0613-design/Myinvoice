@@ -136,6 +136,7 @@ export default function Products() {
             <TableHeader>
               <TableRow>
                 <TableHead>품목명</TableHead>
+                <TableHead>유형</TableHead>
                 <TableHead>카테고리</TableHead>
                 <TableHead className="text-right">단가</TableHead>
                 <TableHead>단위</TableHead>
@@ -148,6 +149,11 @@ export default function Products() {
                 <TableRow key={product.id}>
                   <TableCell className="font-medium">
                     {product.name}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={product.type === 'service' ? 'default' : 'secondary'} className={product.type === 'service' ? 'bg-purple-500' : ''}>
+                      {product.type === 'service' ? '서비스' : '상품'}
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     {product.category ? (

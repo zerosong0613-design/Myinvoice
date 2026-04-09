@@ -25,6 +25,7 @@ export interface InvoiceItemInput {
   unit_price: number
   amount: number
   sort_order: number
+  performer?: string | null
 }
 
 export function useInvoices() {

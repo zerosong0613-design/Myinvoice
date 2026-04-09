@@ -40,6 +40,7 @@ function emptyItem(): InvoiceItemInput {
     unit_price: 0,
     amount: 0,
     sort_order: 0,
+    performer: null,
   }
 }
 
@@ -430,7 +431,7 @@ export default function InvoiceForm() {
                       <SelectItem value="__custom__">직접 입력</SelectItem>
                       {products.map((p) => (
                         <SelectItem key={p.id} value={p.id}>
-                          {p.name} ({formatCurrency(p.unit_price)})
+                          {p.type === 'service' ? '🔧 ' : ''}{p.name} ({formatCurrency(p.unit_price)}{p.unit ? `/${p.unit}` : ''})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -449,6 +450,20 @@ export default function InvoiceForm() {
                   </div>
                 )}
               </div>
+
+              {/* 서비스 품목인 경우 수행자 */}
+              {item.product_id && products.find((p) => p.id === item.product_id)?.type === 'service' && (
+                <div className="space-y-2">
+                  <Label>수행자</Label>
+                  <Input
+                    value={item.performer ?? ''}
+                    onChange={(e) =>
+                      updateItem(index, { performer: e.target.value || null })
+                    }
+                    placeholder="서비스 수행자 이름 (선택)"
+                  />
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label>설명</Label>

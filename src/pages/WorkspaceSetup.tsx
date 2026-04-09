@@ -8,14 +8,16 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/store/useAuthStore'
 import { useWorkspaceStore } from '@/store/useWorkspaceStore'
+import type { Workspace } from '@/types'
 
 export default function WorkspaceSetup() {
   const navigate = useNavigate()
-  const { user, loading: authLoading } = useAuthStore()
+  const { user, loading: authLoading, setUser, setLoading: setAuthLoading } = useAuthStore()
   const { setWorkspace } = useWorkspaceStore()
 
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [checking, setChecking] = useState(true)
 
   const [name, setName] = useState('')
   const [bizNumber, setBizNumber] = useState('')
@@ -23,11 +25,49 @@ export default function WorkspaceSetup() {
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
 
+  // 1) 인증 초기화 — AuthGuard 밖이므로 직접 세션 확인
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/login')
+    const initAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      setUser(session?.user ?? null)
+      setAuthLoading(false)
     }
-  }, [authLoading, user, navigate])
+    initAuth()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+      setAuthLoading(false)
+    })
+    return () => subscription.unsubscribe()
+  }, [setUser, setAuthLoading])
+
+  // 2) 기존 워크스페이스 확인 — 있으면 바로 대시보드로
+  useEffect(() => {
+    if (authLoading) return
+    if (!user) {
+      navigate('/login', { replace: true })
+      return
+    }
+
+    const checkExisting = async () => {
+      setChecking(true)
+      const { data, error: fetchError } = await supabase
+        .from('workspace_members')
+        .select('workspace_id, workspaces(*)')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .limit(1)
+        .single()
+
+      if (!fetchError && data?.workspaces) {
+        setWorkspace(data.workspaces as unknown as Workspace)
+        navigate('/', { replace: true })
+        return
+      }
+      setChecking(false)
+    }
+    checkExisting()
+  }, [authLoading, user, navigate, setWorkspace])
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -75,7 +115,7 @@ export default function WorkspaceSetup() {
     }
   }
 
-  if (authLoading) {
+  if (authLoading || checking) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

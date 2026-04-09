@@ -73,6 +73,7 @@ export interface Invoice {
   tax_amount: number
   total: number
   memo: string | null
+  source_quote_id: string | null
   created_by: string | null
   created_at: string
   updated_at: string
@@ -107,6 +108,7 @@ export interface Quote {
   tax_amount: number
   total: number
   memo: string | null
+  converted_invoice_id: string | null
   created_by: string | null
   created_at: string
   updated_at: string

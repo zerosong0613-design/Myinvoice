@@ -42,7 +42,9 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       return
     }
 
-    const loadWorkspace = async () => {
+    let cancelled = false
+
+    const loadWorkspace = async (retries = 2) => {
       setWorkspaceLoading(true)
       const { data, error } = await supabase
         .from('workspace_members')
@@ -52,15 +54,24 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         .limit(1)
         .single()
 
+      if (cancelled) return
+
       if (!error && data?.workspaces) {
         setWorkspace(data.workspaces as unknown as import('@/types').Workspace)
+        setWorkspaceLoading(false)
+      } else if (retries > 0) {
+        // RLS 정책이 세션 초기화 전에 실행될 수 있으므로 재시도
+        await new Promise((r) => setTimeout(r, 500))
+        if (!cancelled) await loadWorkspace(retries - 1)
       } else {
         setWorkspace(null)
+        setWorkspaceLoading(false)
       }
-      setWorkspaceLoading(false)
     }
 
     loadWorkspace()
+
+    return () => { cancelled = true }
   }, [user, authLoading, setWorkspace, setWorkspaceLoading])
 
   useEffect(() => {

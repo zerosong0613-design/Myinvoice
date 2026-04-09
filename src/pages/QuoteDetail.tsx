@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
+  FileText,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -125,6 +126,46 @@ export default function QuoteDetail() {
         </div>
 
         <div className="flex gap-2">
+          {!quote.converted_invoice_id && (
+            <Button
+              size="sm"
+              onClick={() =>
+                navigate('/invoices/new', {
+                  state: {
+                    fromQuote: true,
+                    quoteId: quote.id,
+                    customerId: quote.customer_id,
+                    customerName: quote.customer_name,
+                    customerEmail: quote.customer_email,
+                    taxType: quote.tax_type,
+                    memo: quote.memo,
+                    items: items.map((item) => ({
+                      product_id: item.product_id,
+                      name: item.name,
+                      description: item.description,
+                      quantity: item.quantity,
+                      unit_price: item.unit_price,
+                      amount: item.amount,
+                      sort_order: item.sort_order,
+                    })),
+                  },
+                })
+              }
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              청구서로 변환
+            </Button>
+          )}
+          {quote.converted_invoice_id && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate(`/invoices/${quote.converted_invoice_id}`)}
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              변환된 청구서 보기
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={() => navigate(`/quotes/${quote.id}/edit`)}>
             <Pencil className="mr-2 h-4 w-4" />
             수정

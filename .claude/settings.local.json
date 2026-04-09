@@ -6,7 +6,13 @@
       "Bash(cp \"C:/Users/aimej/Downloads/myinvoice-temp/.gitignore\" \"C:/Users/aimej/Downloads/MyInvoice/\")",
       "Bash(rm -rf \"C:/Users/aimej/Downloads/myinvoice-temp\")",
       "Bash(npm install:*)",
-      "Bash(npx shadcn@latest init -d -y)"
+      "Bash(npx shadcn@latest init -d -y)",
+      "Bash(npx shadcn@latest add input card dialog table select badge tabs sheet dropdown-menu label textarea separator avatar tooltip -y)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run:*)",
+      "Bash(npx vercel:*)",
+      "Bash(clip)",
+      "Bash(npx vite:*)"
     ]
   }
 }

@@ -6,6 +6,8 @@ import {
   AlertTriangle,
   FileText,
   Plus,
+  ClipboardList,
+  CreditCard,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -23,10 +25,12 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import InvoiceStatusBadge from '@/components/invoice/InvoiceStatusBadge'
+import QuoteStatusBadge from '@/components/invoice/QuoteStatusBadge'
+import CreditNoteStatusBadge from '@/components/invoice/CreditNoteStatusBadge'
 import { supabase } from '@/lib/supabase'
 import { useWorkspaceStore } from '@/store/useWorkspaceStore'
 import { formatCurrency, formatDate } from '@/lib/utils'
-import type { WorkspaceInvoiceStats, Invoice, InvoiceStatus } from '@/types'
+import type { WorkspaceInvoiceStats, Invoice, InvoiceStatus, Quote, QuoteStatus, CreditNote, CreditNoteStatus } from '@/types'
 
 export default function Dashboard() {
   const { workspace } = useWorkspaceStore()
@@ -34,6 +38,10 @@ export default function Dashboard() {
 
   const [stats, setStats] = useState<WorkspaceInvoiceStats | null>(null)
   const [recentInvoices, setRecentInvoices] = useState<Invoice[]>([])
+  const [recentQuotes, setRecentQuotes] = useState<Quote[]>([])
+  const [recentCreditNotes, setRecentCreditNotes] = useState<CreditNote[]>([])
+  const [pendingQuotesCount, setPendingQuotesCount] = useState(0)
+  const [creditNotesTotal, setCreditNotesTotal] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -41,7 +49,7 @@ export default function Dashboard() {
       if (!workspace) return
       setLoading(true)
 
-      const [statsRes, invoicesRes] = await Promise.all([
+      const [statsRes, invoicesRes, quotesRes, creditNotesRes, pendingQuotesRes, cnTotalRes] = await Promise.all([
         supabase
           .from('workspace_invoice_stats')
           .select('*')
@@ -53,14 +61,38 @@ export default function Dashboard() {
           .eq('workspace_id', workspace.id)
           .order('created_at', { ascending: false })
           .limit(5),
+        supabase
+          .from('quotes')
+          .select('*')
+          .eq('workspace_id', workspace.id)
+          .order('created_at', { ascending: false })
+          .limit(5),
+        supabase
+          .from('credit_notes')
+          .select('*')
+          .eq('workspace_id', workspace.id)
+          .order('created_at', { ascending: false })
+          .limit(5),
+        supabase
+          .from('quotes')
+          .select('id', { count: 'exact', head: true })
+          .eq('workspace_id', workspace.id)
+          .in('status', ['draft', 'sent']),
+        supabase
+          .from('credit_notes')
+          .select('total')
+          .eq('workspace_id', workspace.id)
+          .in('status', ['sent', 'applied']),
       ])
 
-      if (statsRes.data) {
-        setStats(statsRes.data as WorkspaceInvoiceStats)
-      }
-      if (invoicesRes.data) {
-        setRecentInvoices(invoicesRes.data as Invoice[])
-      }
+      if (statsRes.data) setStats(statsRes.data as WorkspaceInvoiceStats)
+      if (invoicesRes.data) setRecentInvoices(invoicesRes.data as Invoice[])
+      if (quotesRes.data) setRecentQuotes(quotesRes.data as Quote[])
+      if (creditNotesRes.data) setRecentCreditNotes(creditNotesRes.data as CreditNote[])
+      setPendingQuotesCount(pendingQuotesRes.count ?? 0)
+      setCreditNotesTotal(
+        (cnTotalRes.data ?? []).reduce((sum: number, cn: { total: number }) => sum + cn.total, 0)
+      )
 
       setLoading(false)
     }
@@ -101,7 +133,7 @@ export default function Dashboard() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">이번 달 매출</CardTitle>
@@ -145,11 +177,33 @@ export default function Dashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">청구서 수</CardTitle>
+            <CardTitle className="text-sm font-medium">청구서</CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalCount}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">진행 중 견적</CardTitle>
+            <ClipboardList className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{pendingQuotesCount}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">신용전표 합계</CardTitle>
+            <CreditCard className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {formatCurrency(creditNotesTotal)}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -204,6 +258,99 @@ export default function Dashboard() {
           )}
         </CardContent>
       </Card>
+      {/* Recent Quotes */}
+      <Card>
+        <CardHeader>
+          <CardTitle>최근 견적서</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {recentQuotes.length === 0 ? (
+            <p className="py-4 text-center text-sm text-muted-foreground">
+              등록된 견적서가 없습니다.
+            </p>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>견적서번호</TableHead>
+                    <TableHead>거래처</TableHead>
+                    <TableHead>발행일</TableHead>
+                    <TableHead className="text-right">금액</TableHead>
+                    <TableHead>상태</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {recentQuotes.map((quote) => (
+                    <TableRow
+                      key={quote.id}
+                      className="cursor-pointer"
+                      onClick={() => navigate(`/quotes/${quote.id}`)}
+                    >
+                      <TableCell className="font-medium">
+                        {quote.quote_number}
+                      </TableCell>
+                      <TableCell>{quote.customer_name}</TableCell>
+                      <TableCell>{formatDate(quote.issued_at)}</TableCell>
+                      <TableCell className="text-right font-medium">
+                        {formatCurrency(quote.total)}
+                      </TableCell>
+                      <TableCell>
+                        <QuoteStatusBadge status={quote.status as QuoteStatus} />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Recent Credit Notes */}
+      {recentCreditNotes.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>최근 신용전표</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>전표번호</TableHead>
+                    <TableHead>거래처</TableHead>
+                    <TableHead>발행일</TableHead>
+                    <TableHead className="text-right">금액</TableHead>
+                    <TableHead>상태</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {recentCreditNotes.map((cn) => (
+                    <TableRow
+                      key={cn.id}
+                      className="cursor-pointer"
+                      onClick={() => navigate(`/credit-notes/${cn.id}`)}
+                    >
+                      <TableCell className="font-medium">
+                        {cn.credit_note_number}
+                      </TableCell>
+                      <TableCell>{cn.customer_name}</TableCell>
+                      <TableCell>{formatDate(cn.issued_at)}</TableCell>
+                      <TableCell className="text-right font-medium">
+                        {formatCurrency(cn.total)}
+                      </TableCell>
+                      <TableCell>
+                        <CreditNoteStatusBadge status={cn.status as CreditNoteStatus} />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

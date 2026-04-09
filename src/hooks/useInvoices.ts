@@ -13,6 +13,7 @@ export interface InvoiceInput {
   status: InvoiceStatus
   tax_type: TaxType
   memo: string | null
+  source_quote_id?: string | null
 }
 
 export interface InvoiceItemInput {
@@ -149,9 +150,7 @@ export function useInvoices() {
           total = subtotal + taxAmount
         }
 
-        const { data: invoice, error: insertError } = await supabase
-          .from('invoices')
-          .insert({
+        const insertPayload: Record<string, unknown> = {
             workspace_id: workspace.id,
             invoice_number: invoiceNumber,
             customer_id: input.customer_id,
@@ -166,7 +165,14 @@ export function useInvoices() {
             total,
             memo: input.memo,
             created_by: user.id,
-          })
+          }
+        if (input.source_quote_id) {
+          insertPayload.source_quote_id = input.source_quote_id
+        }
+
+        const { data: invoice, error: insertError } = await supabase
+          .from('invoices')
+          .insert(insertPayload)
           .select()
           .single()
 

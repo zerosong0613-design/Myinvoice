@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { ArrowLeft, Plus, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -22,6 +22,7 @@ import {
 import { useInvoices, type InvoiceItemInput } from '@/hooks/useInvoices'
 import { useCustomers } from '@/hooks/useCustomers'
 import { useProducts } from '@/hooks/useProducts'
+import { supabase } from '@/lib/supabase'
 import { formatCurrency } from '@/lib/utils'
 import type { InvoiceStatus, TaxType } from '@/types'
 
@@ -41,10 +42,23 @@ function emptyItem(): InvoiceItemInput {
   }
 }
 
+interface QuoteConvertState {
+  fromQuote: true
+  quoteId: string
+  customerId: string | null
+  customerName: string
+  customerEmail: string | null
+  taxType: 'inclusive' | 'exclusive'
+  memo: string | null
+  items: InvoiceItemInput[]
+}
+
 export default function InvoiceForm() {
   const { id } = useParams<{ id: string }>()
   const isEdit = Boolean(id)
   const navigate = useNavigate()
+  const location = useLocation()
+  const quoteState = location.state as QuoteConvertState | null
 
   const {
     getInvoice,
@@ -58,16 +72,19 @@ export default function InvoiceForm() {
 
   // Form state
   const [invoiceNumber, setInvoiceNumber] = useState('')
-  const [customerId, setCustomerId] = useState<string | null>(null)
-  const [customerName, setCustomerName] = useState('')
-  const [customerEmail, setCustomerEmail] = useState<string | null>(null)
+  const [customerId, setCustomerId] = useState<string | null>(quoteState?.customerId ?? null)
+  const [customerName, setCustomerName] = useState(quoteState?.customerName ?? '')
+  const [customerEmail, setCustomerEmail] = useState<string | null>(quoteState?.customerEmail ?? null)
   const [issuedAt, setIssuedAt] = useState(today())
   const [dueAt, setDueAt] = useState('')
-  const [taxType, setTaxType] = useState<TaxType>('exclusive')
-  const [memo, setMemo] = useState('')
-  const [items, setItems] = useState<InvoiceItemInput[]>([emptyItem()])
+  const [taxType, setTaxType] = useState<TaxType>(quoteState?.taxType ?? 'exclusive')
+  const [memo, setMemo] = useState(quoteState?.memo ?? '')
+  const [items, setItems] = useState<InvoiceItemInput[]>(
+    quoteState?.items && quoteState.items.length > 0 ? quoteState.items : [emptyItem()]
+  )
   const [saving, setSaving] = useState(false)
   const [pageLoading, setPageLoading] = useState(true)
+  const [sourceQuoteId] = useState<string | null>(quoteState?.quoteId ?? null)
 
   // Load supporting data
   useEffect(() => {
@@ -75,7 +92,7 @@ export default function InvoiceForm() {
     fetchProducts()
   }, [fetchCustomers, fetchProducts])
 
-  // Load invoice for editing, or generate next number for new
+  // Load invoice for editing, or generate next number for new (including quote conversion)
   useEffect(() => {
     async function init() {
       setPageLoading(true)
@@ -106,6 +123,7 @@ export default function InvoiceForm() {
           )
         }
       } else {
+        // 새 청구서 — 번호만 생성 (견적서 변환의 경우 데이터는 이미 state로 pre-fill됨)
         const nextNumber = await getNextInvoiceNumber()
         setInvoiceNumber(nextNumber)
       }
@@ -211,6 +229,7 @@ export default function InvoiceForm() {
       status,
       tax_type: taxType,
       memo: memo.trim() || null,
+      source_quote_id: sourceQuoteId,
     }
 
     const validItems = items
@@ -222,6 +241,14 @@ export default function InvoiceForm() {
       result = await updateInvoice(id, input, validItems)
     } else {
       result = await createInvoice(input, validItems)
+    }
+
+    // 견적서 변환인 경우, 원본 견적서에 converted_invoice_id 업데이트
+    if (result && sourceQuoteId) {
+      await supabase
+        .from('quotes')
+        .update({ converted_invoice_id: result.id, status: 'accepted' })
+        .eq('id', sourceQuoteId)
     }
 
     setSaving(false)
@@ -245,9 +272,16 @@ export default function InvoiceForm() {
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-2xl font-bold">
-          {isEdit ? '청구서 수정' : '새 청구서'}
-        </h1>
+        <div>
+          <h1 className="text-2xl font-bold">
+            {isEdit ? '청구서 수정' : '새 청구서'}
+          </h1>
+          {sourceQuoteId && (
+            <p className="text-sm text-muted-foreground">
+              견적서에서 변환 중입니다. 내용을 확인 후 저장하세요.
+            </p>
+          )}
+        </div>
       </div>
 
       {error && (

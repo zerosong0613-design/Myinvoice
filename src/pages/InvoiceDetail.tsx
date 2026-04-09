@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, Link } from 'react-router-dom'
 import {
   ArrowLeft,
   Pencil,
@@ -8,6 +8,8 @@ import {
   CheckCircle2,
   AlertTriangle,
   XCircle,
+  FileText,
+  CreditCard,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -35,8 +37,9 @@ import {
 } from '@/components/ui/dialog'
 import InvoiceStatusBadge from '@/components/invoice/InvoiceStatusBadge'
 import { useInvoices } from '@/hooks/useInvoices'
+import { supabase } from '@/lib/supabase'
 import { formatCurrency, formatDate } from '@/lib/utils'
-import type { Invoice, InvoiceItem, InvoiceStatus } from '@/types'
+import type { Invoice, InvoiceItem, InvoiceStatus, CreditNote, Quote } from '@/types'
 
 export default function InvoiceDetail() {
   const { id } = useParams<{ id: string }>()
@@ -46,6 +49,8 @@ export default function InvoiceDetail() {
 
   const [invoice, setInvoice] = useState<Invoice | null>(null)
   const [items, setItems] = useState<InvoiceItem[]>([])
+  const [relatedCreditNotes, setRelatedCreditNotes] = useState<CreditNote[]>([])
+  const [sourceQuote, setSourceQuote] = useState<Quote | null>(null)
   const [loading, setLoading] = useState(true)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
@@ -58,6 +63,24 @@ export default function InvoiceDetail() {
       if (result) {
         setInvoice(result.invoice)
         setItems(result.items)
+
+        // 연결된 신용전표 조회
+        const { data: cnData } = await supabase
+          .from('credit_notes')
+          .select('*')
+          .eq('original_invoice_id', id)
+          .order('created_at', { ascending: false })
+        if (cnData) setRelatedCreditNotes(cnData as CreditNote[])
+
+        // 원본 견적서 조회
+        if (result.invoice.source_quote_id) {
+          const { data: quoteData } = await supabase
+            .from('quotes')
+            .select('*')
+            .eq('id', result.invoice.source_quote_id)
+            .single()
+          if (quoteData) setSourceQuote(quoteData as Quote)
+        }
       }
       setLoading(false)
     }
@@ -125,6 +148,34 @@ export default function InvoiceDetail() {
         </div>
 
         <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() =>
+              navigate('/credit-notes/new', {
+                state: {
+                  fromInvoice: true,
+                  invoiceId: invoice.id,
+                  customerId: invoice.customer_id,
+                  customerName: invoice.customer_name,
+                  customerEmail: invoice.customer_email,
+                  taxType: invoice.tax_type,
+                  items: items.map((item) => ({
+                    product_id: item.product_id,
+                    name: item.name,
+                    description: item.description,
+                    quantity: item.quantity,
+                    unit_price: item.unit_price,
+                    amount: item.amount,
+                    sort_order: item.sort_order,
+                  })),
+                },
+              })
+            }
+          >
+            <CreditCard className="mr-2 h-4 w-4" />
+            신용전표 발행
+          </Button>
           <Button variant="outline" size="sm" onClick={() => navigate(`/invoices/${invoice.id}/edit`)}>
             <Pencil className="mr-2 h-4 w-4" />
             수정
@@ -296,6 +347,47 @@ export default function InvoiceDetail() {
           </div>
         </CardContent>
       </Card>
+
+      {/* 관련 문서 */}
+      {(sourceQuote || relatedCreditNotes.length > 0) && (
+        <Card>
+          <CardHeader>
+            <CardTitle>관련 문서</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {sourceQuote && (
+              <div className="flex items-center gap-2 text-sm">
+                <FileText className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">원본 견적서:</span>
+                <Link
+                  to={`/quotes/${sourceQuote.id}`}
+                  className="font-medium text-blue-600 hover:underline"
+                >
+                  {sourceQuote.quote_number}
+                </Link>
+                <span className="text-muted-foreground">
+                  ({formatCurrency(sourceQuote.total)})
+                </span>
+              </div>
+            )}
+            {relatedCreditNotes.map((cn) => (
+              <div key={cn.id} className="flex items-center gap-2 text-sm">
+                <CreditCard className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">신용전표:</span>
+                <Link
+                  to={`/credit-notes/${cn.id}`}
+                  className="font-medium text-blue-600 hover:underline"
+                >
+                  {cn.credit_note_number}
+                </Link>
+                <span className="text-muted-foreground">
+                  ({formatCurrency(cn.total)})
+                </span>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Memo */}
       {invoice.memo && (

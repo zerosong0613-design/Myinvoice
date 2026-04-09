@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { ArrowLeft, Plus, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -42,10 +42,22 @@ function emptyItem(): CreditNoteItemInput {
   }
 }
 
+interface InvoiceConvertState {
+  fromInvoice: true
+  invoiceId: string
+  customerId: string | null
+  customerName: string
+  customerEmail: string | null
+  taxType: 'inclusive' | 'exclusive'
+  items: CreditNoteItemInput[]
+}
+
 export default function CreditNoteForm() {
   const { id } = useParams<{ id: string }>()
   const isEdit = Boolean(id)
   const navigate = useNavigate()
+  const location = useLocation()
+  const invoiceState = location.state as InvoiceConvertState | null
 
   const {
     getCreditNote,
@@ -59,14 +71,16 @@ export default function CreditNoteForm() {
   const { products, fetchProducts } = useProducts()
 
   const [creditNoteNumber, setCreditNoteNumber] = useState('')
-  const [originalInvoiceId, setOriginalInvoiceId] = useState<string | null>(null)
-  const [customerId, setCustomerId] = useState<string | null>(null)
-  const [customerName, setCustomerName] = useState('')
-  const [customerEmail, setCustomerEmail] = useState<string | null>(null)
+  const [originalInvoiceId, setOriginalInvoiceId] = useState<string | null>(invoiceState?.invoiceId ?? null)
+  const [customerId, setCustomerId] = useState<string | null>(invoiceState?.customerId ?? null)
+  const [customerName, setCustomerName] = useState(invoiceState?.customerName ?? '')
+  const [customerEmail, setCustomerEmail] = useState<string | null>(invoiceState?.customerEmail ?? null)
   const [issuedAt, setIssuedAt] = useState(today())
-  const [taxType, setTaxType] = useState<TaxType>('exclusive')
+  const [taxType, setTaxType] = useState<TaxType>(invoiceState?.taxType ?? 'exclusive')
   const [memo, setMemo] = useState('')
-  const [items, setItems] = useState<CreditNoteItemInput[]>([emptyItem()])
+  const [items, setItems] = useState<CreditNoteItemInput[]>(
+    invoiceState?.items && invoiceState.items.length > 0 ? invoiceState.items : [emptyItem()]
+  )
   const [saving, setSaving] = useState(false)
   const [pageLoading, setPageLoading] = useState(true)
 

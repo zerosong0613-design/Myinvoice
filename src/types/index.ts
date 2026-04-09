@@ -9,6 +9,7 @@ export interface Workspace {
   email: string | null
   memo: string | null
   created_at: string
+  deleted_at: string | null
 }
 
 export interface WorkspaceMember {

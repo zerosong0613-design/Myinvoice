@@ -63,7 +63,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
       const wsList = (data ?? [])
         .map((d) => d.workspaces as unknown as import('@/types').Workspace)
-        .filter(Boolean)
+        .filter((ws) => ws && !ws.deleted_at)
 
       if (wsList.length === 1) {
         setWorkspace(wsList[0])

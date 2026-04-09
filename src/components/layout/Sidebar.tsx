@@ -64,7 +64,7 @@ function NavContent({ onClose }: { onClose?: () => void }) {
         setWorkspaces(
           data
             .map((d) => d.workspaces as unknown as Workspace)
-            .filter(Boolean)
+            .filter((ws) => ws && !ws.deleted_at)
         )
       }
     }

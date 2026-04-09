@@ -20,6 +20,7 @@ import Categories from '@/pages/Categories'
 import PaymentRequests from '@/pages/PaymentRequests'
 import PaymentRequestForm from '@/pages/PaymentRequestForm'
 import PaymentRequestDetail from '@/pages/PaymentRequestDetail'
+import Receivables from '@/pages/Receivables'
 import Statistics from '@/pages/Statistics'
 import SettingsPage from '@/pages/Settings'
 import WorkspaceSetup from '@/pages/WorkspaceSetup'
@@ -64,6 +65,7 @@ export default function App() {
             <Route path="customers" element={<Customers />} />
             <Route path="products" element={<Products />} />
             <Route path="categories" element={<Categories />} />
+            <Route path="receivables" element={<Receivables />} />
             <Route path="statistics" element={<Statistics />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>

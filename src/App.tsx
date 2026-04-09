@@ -20,6 +20,7 @@ import Categories from '@/pages/Categories'
 import Statistics from '@/pages/Statistics'
 import SettingsPage from '@/pages/Settings'
 import WorkspaceSetup from '@/pages/WorkspaceSetup'
+import WorkspaceSelect from '@/pages/WorkspaceSelect'
 import InviteAccept from '@/pages/InviteAccept'
 
 export default function App() {
@@ -29,6 +30,7 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/workspace-setup" element={<WorkspaceSetup />} />
+          <Route path="/workspace-select" element={<WorkspaceSelect />} />
           <Route path="/invite/:token" element={<InviteAccept />} />
           <Route
             element={

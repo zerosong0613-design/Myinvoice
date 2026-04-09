@@ -28,13 +28,21 @@ import InvoiceStatusBadge from '@/components/invoice/InvoiceStatusBadge'
 import QuoteStatusBadge from '@/components/invoice/QuoteStatusBadge'
 import CreditNoteStatusBadge from '@/components/invoice/CreditNoteStatusBadge'
 import { supabase } from '@/lib/supabase'
+import { useAuthStore } from '@/store/useAuthStore'
 import { useWorkspaceStore } from '@/store/useWorkspaceStore'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import type { WorkspaceInvoiceStats, Invoice, InvoiceStatus, Quote, QuoteStatus, CreditNote, CreditNoteStatus } from '@/types'
 
 export default function Dashboard() {
+  const { user } = useAuthStore()
   const { workspace } = useWorkspaceStore()
   const navigate = useNavigate()
+
+  // 사용자 이름 추출 (Google OAuth에서 이름 가져오기)
+  const userName = user?.user_metadata?.full_name
+    || user?.user_metadata?.name
+    || user?.email?.split('@')[0]
+    || '사용자'
 
   const [stats, setStats] = useState<WorkspaceInvoiceStats | null>(null)
   const [recentInvoices, setRecentInvoices] = useState<Invoice[]>([])
@@ -114,23 +122,56 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">대시보드</h1>
-        <div className="flex gap-2">
+      {/* 환영 메시지 */}
+      <div className="rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
+        <h1 className="text-2xl font-bold">안녕하세요, {userName}님!</h1>
+        <p className="mt-1 text-sm text-blue-100">
+          {workspace?.name}의 청구서와 견적서를 한눈에 관리하세요.
+        </p>
+        <div className="mt-4 flex gap-2">
           <Link to="/invoices/new">
-            <Button>
+            <Button className="bg-white text-blue-600 hover:bg-blue-50">
               <Plus className="mr-2 h-4 w-4" />
               새 청구서
             </Button>
           </Link>
           <Link to="/quotes/new">
-            <Button variant="outline">
+            <Button variant="outline" className="border-white/40 text-white hover:bg-white/10">
               <Plus className="mr-2 h-4 w-4" />
               새 견적서
             </Button>
           </Link>
         </div>
       </div>
+
+      {/* 초보자 안내 — 문서가 하나도 없을 때 */}
+      {totalCount === 0 && recentQuotes.length === 0 && (
+        <Card className="border-dashed border-blue-300 bg-blue-50/50">
+          <CardContent className="py-6">
+            <h3 className="font-semibold text-blue-900">시작하기</h3>
+            <div className="mt-3 grid gap-3 text-sm text-blue-800 sm:grid-cols-3">
+              <div className="rounded-md bg-white p-3">
+                <p className="font-medium">1. 거래처 등록</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  자주 거래하는 업체를 미리 등록하면 청구서 작성이 빨라져요.
+                </p>
+              </div>
+              <div className="rounded-md bg-white p-3">
+                <p className="font-medium">2. 견적서 작성</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  견적서를 먼저 보내고, 수락되면 청구서로 변환할 수 있어요.
+                </p>
+              </div>
+              <div className="rounded-md bg-white p-3">
+                <p className="font-medium">3. 청구서 발행</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  청구서를 PDF로 다운로드하거나 이메일로 바로 보낼 수 있어요.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* KPI Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">

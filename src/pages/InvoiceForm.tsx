@@ -283,9 +283,13 @@ export default function InvoiceForm() {
           <h1 className="text-2xl font-bold">
             {isEdit ? '청구서 수정' : '새 청구서'}
           </h1>
-          {sourceQuoteId && (
+          {sourceQuoteId ? (
             <p className="text-sm text-muted-foreground">
               견적서에서 변환 중입니다. 내용을 확인 후 저장하세요.
+            </p>
+          ) : !isEdit && (
+            <p className="text-sm text-muted-foreground">
+              거래처와 품목을 입력하고, 임시저장 또는 바로 발행할 수 있어요.
             </p>
           )}
         </div>
@@ -332,7 +336,11 @@ export default function InvoiceForm() {
               onValueChange={(v) => v && handleCustomerSelect(v)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="거래처 선택" />
+                <SelectValue>
+                  {customerId
+                    ? (customers.find((c) => c.id === customerId)?.name || customerName || '거래처 불러오는 중...')
+                    : '직접 입력'}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="__custom__">직접 입력</SelectItem>

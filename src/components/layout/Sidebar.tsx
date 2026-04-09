@@ -81,16 +81,26 @@ function NavContent({ onClose }: { onClose?: () => void }) {
     navigate('/login')
   }
 
+  // 워크스페이스 이름의 첫 글자로 아이콘 생성
+  const wsInitial = (workspace?.name ?? 'M')[0].toUpperCase()
+
   return (
     <div className="flex h-full flex-col">
       {workspaces.length > 1 ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex w-full items-center gap-2 px-4 py-5 text-left hover:bg-accent transition-colors">
-              <FileText className="h-6 w-6 text-primary shrink-0" />
-              <span className="font-semibold truncate">
-                {workspace?.name ?? '마이인보이스'}
-              </span>
+            <button className="flex w-full items-center gap-3 px-4 py-4 text-left hover:bg-accent transition-colors">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 text-sm font-bold text-white">
+                {wsInitial}
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold">
+                  {workspace?.name ?? '마이인보이스'}
+                </p>
+                <p className="truncate text-xs text-muted-foreground">
+                  워크스페이스 전환
+                </p>
+              </div>
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-56">
@@ -100,17 +110,27 @@ function NavContent({ onClose }: { onClose?: () => void }) {
                 onClick={() => handleSwitchWorkspace(ws)}
                 className={cn(ws.id === workspace?.id && 'bg-accent')}
               >
+                <div className="mr-2 flex h-6 w-6 items-center justify-center rounded bg-gradient-to-br from-blue-600 to-indigo-600 text-xs font-bold text-white">
+                  {ws.name[0].toUpperCase()}
+                </div>
                 {ws.name}
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (
-        <div className="flex items-center gap-2 px-4 py-5">
-          <FileText className="h-6 w-6 text-primary" />
-          <span className="font-semibold truncate">
-            {workspace?.name ?? '마이인보이스'}
-          </span>
+        <div className="flex items-center gap-3 px-4 py-4">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 text-sm font-bold text-white">
+            {wsInitial}
+          </div>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold">
+              {workspace?.name ?? '마이인보이스'}
+            </p>
+            <p className="truncate text-xs text-muted-foreground">
+              청구서 관리
+            </p>
+          </div>
         </div>
       )}
 

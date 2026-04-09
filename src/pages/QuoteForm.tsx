@@ -238,9 +238,16 @@ export default function QuoteForm() {
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-2xl font-bold">
-          {isEdit ? '견적서 수정' : '새 견적서'}
-        </h1>
+        <div>
+          <h1 className="text-2xl font-bold">
+            {isEdit ? '견적서 수정' : '새 견적서'}
+          </h1>
+          {!isEdit && (
+            <p className="text-sm text-muted-foreground">
+              견적서는 거래 전에 가격을 제시하는 문서예요. 수락되면 청구서로 변환할 수 있어요.
+            </p>
+          )}
+        </div>
       </div>
 
       {error && (
@@ -283,7 +290,11 @@ export default function QuoteForm() {
               onValueChange={(v) => v && handleCustomerSelect(v)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="거래처 선택" />
+                <SelectValue>
+                  {customerId
+                    ? (customers.find((c) => c.id === customerId)?.name || customerName || '거래처 불러오는 중...')
+                    : '직접 입력'}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="__custom__">직접 입력</SelectItem>

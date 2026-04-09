@@ -270,9 +270,16 @@ export default function CreditNoteForm() {
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-2xl font-bold">
-          {isEdit ? '신용전표 수정' : '새 신용전표'}
-        </h1>
+        <div>
+          <h1 className="text-2xl font-bold">
+            {isEdit ? '신용전표 수정' : '새 신용전표'}
+          </h1>
+          {!isEdit && (
+            <p className="text-sm text-muted-foreground">
+              신용전표는 이미 발행한 청구서 금액을 줄이거나 취소할 때 사용해요. (반품, 할인, 과다청구 등)
+            </p>
+          )}
+        </div>
       </div>
 
       {error && (
@@ -310,12 +317,19 @@ export default function CreditNoteForm() {
 
           <div className="space-y-2">
             <Label>원본 청구서</Label>
+            <p className="text-xs text-muted-foreground">이 신용전표와 연결할 원본 청구서를 선택하세요.</p>
             <Select
               value={originalInvoiceId ?? '__none__'}
               onValueChange={(v) => v && handleInvoiceSelect(v)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="원본 청구서 선택" />
+                <SelectValue>
+                  {originalInvoiceId
+                    ? (invoices.find((inv: Invoice) => inv.id === originalInvoiceId)
+                        ? `${invoices.find((inv: Invoice) => inv.id === originalInvoiceId)!.invoice_number} - ${invoices.find((inv: Invoice) => inv.id === originalInvoiceId)!.customer_name}`
+                        : '청구서 불러오는 중...')
+                    : '선택 안함'}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="__none__">선택 안함</SelectItem>
@@ -335,7 +349,11 @@ export default function CreditNoteForm() {
               onValueChange={(v) => v && handleCustomerSelect(v)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="거래처 선택" />
+                <SelectValue>
+                  {customerId
+                    ? (customers.find((c) => c.id === customerId)?.name || customerName || '거래처 불러오는 중...')
+                    : '직접 입력'}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="__custom__">직접 입력</SelectItem>

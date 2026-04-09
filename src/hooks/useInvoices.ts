@@ -193,11 +193,12 @@ export function useInvoices() {
 
         // 견적서 연결 (마이그레이션 전에는 조용히 실패)
         if (input.source_quote_id) {
-          await supabase
-            .from('invoices')
-            .update({ source_quote_id: input.source_quote_id } as Record<string, unknown>)
-            .eq('id', invoice.id)
-            .catch(() => {})
+          try {
+            await supabase
+              .from('invoices')
+              .update({ source_quote_id: input.source_quote_id } as unknown as Record<string, never>)
+              .eq('id', invoice.id)
+          } catch { /* 컬럼 없으면 무시 */ }
         }
 
         setInvoices((prev) => [invoice as Invoice, ...prev])

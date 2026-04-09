@@ -224,7 +224,7 @@ interface DocumentPDFProps {
 
 export default function DocumentPDF({ type, document, items, workspace }: DocumentPDFProps) {
   const config = TYPE_CONFIG[type]
-  const docNumber = (document as Record<string, unknown>)[config.numberField] as string
+  const docNumber = (document as unknown as Record<string, unknown>)[config.numberField] as string
   const issuedAt = document.issued_at
   const secondDate =
     type === 'invoice'

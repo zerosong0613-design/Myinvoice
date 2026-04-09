@@ -77,7 +77,7 @@ export default function InvoiceDetail() {
         if (cnData) setRelatedCreditNotes(cnData as CreditNote[])
 
         // 원본 견적서 조회 (마이그레이션 전에는 source_quote_id가 없을 수 있음)
-        const sqId = (result.invoice as Record<string, unknown>).source_quote_id as string | null
+        const sqId = (result.invoice as unknown as Record<string, unknown>).source_quote_id as string | null
         if (sqId) {
           const { data: quoteData } = await supabase
             .from('quotes')

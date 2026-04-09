@@ -157,7 +157,7 @@ export default function InviteAccept() {
             </div>
           )}
 
-          {status === 'ready' && user && (
+          {(status === 'ready' || status === 'accepting') && user && (
             <div className="space-y-3">
               <p className="text-center text-sm text-muted-foreground">
                 <strong>{workspaceName}</strong>에 초대되었습니다.
@@ -173,12 +173,6 @@ export default function InviteAccept() {
                 {status === 'accepting' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 초대 수락
               </Button>
-            </div>
-          )}
-
-          {status === 'accepting' && (
-            <div className="flex justify-center py-4">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           )}
         </CardContent>

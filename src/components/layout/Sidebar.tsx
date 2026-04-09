@@ -88,7 +88,7 @@ function NavContent({ onClose }: { onClose?: () => void }) {
     <div className="flex h-full flex-col">
       {workspaces.length > 1 ? (
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+          <DropdownMenuTrigger>
             <button className="flex w-full items-center gap-3 px-4 py-4 text-left hover:bg-accent transition-colors">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 text-sm font-bold text-white">
                 {wsInitial}

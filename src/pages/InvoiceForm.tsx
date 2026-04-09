@@ -243,19 +243,20 @@ export default function InvoiceForm() {
       result = await createInvoice(input, validItems)
     }
 
-    // 견적서 변환인 경우, 원본 견적서에 converted_invoice_id 업데이트 (마이그레이션 전에는 상태만 변경)
+    // 견적서 변환인 경우, 원본 견적서에 converted_invoice_id 업데이트
     if (result && sourceQuoteId) {
-      await supabase
-        .from('quotes')
-        .update({ converted_invoice_id: result.id, status: 'accepted' } as Record<string, unknown>)
-        .eq('id', sourceQuoteId)
-        .catch(() => {
-          // converted_invoice_id 컬럼이 없어도 상태만이라도 변경
-          supabase
-            .from('quotes')
-            .update({ status: 'accepted' })
-            .eq('id', sourceQuoteId)
-        })
+      try {
+        await supabase
+          .from('quotes')
+          .update({ converted_invoice_id: result.id, status: 'accepted' } as unknown as Record<string, never>)
+          .eq('id', sourceQuoteId)
+      } catch {
+        // converted_invoice_id 컬럼이 없어도 상태만이라도 변경
+        await supabase
+          .from('quotes')
+          .update({ status: 'accepted' })
+          .eq('id', sourceQuoteId)
+      }
     }
 
     setSaving(false)

@@ -11,7 +11,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
 import { generatePDFBase64 } from '@/components/pdf/PDFDownloadBtn'
 import type { Workspace, Invoice, Quote, CreditNote, InvoiceItem, QuoteItem, CreditNoteItem } from '@/types'
@@ -95,13 +94,12 @@ export default function SendEmailDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Mail className="mr-2 h-4 w-4" />
-          이메일 발송
-        </Button>
-      </DialogTrigger>
+    <>
+      <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
+        <Mail className="mr-2 h-4 w-4" />
+        이메일 발송
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>이메일 발송</DialogTitle>
@@ -155,6 +153,7 @@ export default function SendEmailDialog({
           </Button>
         </DialogFooter>
       </DialogContent>
-    </Dialog>
+      </Dialog>
+    </>
   )
 }

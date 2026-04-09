@@ -150,7 +150,7 @@ export default function QuoteDetail() {
               onSent={() => handleStatusChange('sent')}
             />
           )}
-          {!(quote as Record<string, unknown>).converted_invoice_id && (
+          {!(quote as unknown as Record<string, unknown>).converted_invoice_id && (
             <Button
               size="sm"
               onClick={() =>
@@ -180,11 +180,11 @@ export default function QuoteDetail() {
               청구서로 변환
             </Button>
           )}
-          {(quote as Record<string, unknown>).converted_invoice_id && (
+          {Boolean((quote as unknown as Record<string, unknown>).converted_invoice_id) && (
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate(`/invoices/${(quote as Record<string, unknown>).converted_invoice_id}`)}
+              onClick={() => navigate(`/invoices/${String((quote as unknown as Record<string, unknown>).converted_invoice_id)}`)}
             >
               <FileText className="mr-2 h-4 w-4" />
               변환된 청구서 보기

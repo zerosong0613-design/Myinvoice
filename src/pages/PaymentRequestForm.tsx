@@ -22,6 +22,7 @@ import {
 import { usePaymentRequests, type PaymentRequestItemInput } from '@/hooks/usePaymentRequests'
 import { useCustomers } from '@/hooks/useCustomers'
 import { useProducts } from '@/hooks/useProducts'
+import { useWorkspaceStore } from '@/store/useWorkspaceStore'
 import { formatCurrency } from '@/lib/utils'
 import type { PaymentRequestStatus } from '@/types'
 
@@ -59,8 +60,9 @@ export default function PaymentRequestForm() {
   } = usePaymentRequests()
   const { customers, fetchCustomers } = useCustomers()
   const { products, fetchProducts } = useProducts()
+  const { workspace } = useWorkspaceStore()
 
-  // Form state
+  // Form state — 설정에서 저장한 기본값 자동 적용
   const [requestNumber, setRequestNumber] = useState('')
   const [customerId, setCustomerId] = useState<string | null>(null)
   const [customerName, setCustomerName] = useState('')
@@ -68,10 +70,10 @@ export default function PaymentRequestForm() {
   const [customerBizNumber, setCustomerBizNumber] = useState<string | null>(null)
   const [issuedAt, setIssuedAt] = useState(today())
   const [withholdingRate, setWithholdingRate] = useState(3.3)
-  const [bankName, setBankName] = useState<string | null>(null)
-  const [accountNumber, setAccountNumber] = useState<string | null>(null)
-  const [accountHolder, setAccountHolder] = useState<string | null>(null)
-  const [memo, setMemo] = useState('')
+  const [bankName, setBankName] = useState<string | null>(workspace?.bank_name ?? null)
+  const [accountNumber, setAccountNumber] = useState<string | null>(workspace?.account_number ?? null)
+  const [accountHolder, setAccountHolder] = useState<string | null>(workspace?.account_holder ?? null)
+  const [memo, setMemo] = useState(workspace?.default_memo ?? '')
   const [items, setItems] = useState<PaymentRequestItemInput[]>([emptyItem()])
   const [saving, setSaving] = useState(false)
   const [pageLoading, setPageLoading] = useState(true)

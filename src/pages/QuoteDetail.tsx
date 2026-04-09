@@ -35,7 +35,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import QuoteStatusBadge from '@/components/invoice/QuoteStatusBadge'
+import PDFDownloadBtn from '@/components/pdf/PDFDownloadBtn'
+import SendEmailDialog from '@/components/email/SendEmailDialog'
 import { useQuotes } from '@/hooks/useQuotes'
+import { useWorkspaceStore } from '@/store/useWorkspaceStore'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import type { Quote, QuoteItem, QuoteStatus } from '@/types'
 
@@ -43,6 +46,7 @@ export default function QuoteDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { getQuote, updateQuoteStatus, deleteQuote, error } = useQuotes()
+  const { workspace } = useWorkspaceStore()
 
   const [quote, setQuote] = useState<Quote | null>(null)
   const [items, setItems] = useState<QuoteItem[]>([])
@@ -125,7 +129,27 @@ export default function QuoteDetail() {
           </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          {workspace && (
+            <PDFDownloadBtn
+              type="quote"
+              document={quote}
+              items={items}
+              workspace={workspace}
+              filename={quote.quote_number}
+            />
+          )}
+          {workspace && (
+            <SendEmailDialog
+              type="quote"
+              document={quote}
+              items={items}
+              workspace={workspace}
+              docNumber={quote.quote_number}
+              customerEmail={quote.customer_email}
+              onSent={() => handleStatusChange('sent')}
+            />
+          )}
           {!(quote as Record<string, unknown>).converted_invoice_id && (
             <Button
               size="sm"

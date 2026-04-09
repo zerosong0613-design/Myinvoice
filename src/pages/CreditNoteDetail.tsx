@@ -32,7 +32,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import CreditNoteStatusBadge from '@/components/invoice/CreditNoteStatusBadge'
+import PDFDownloadBtn from '@/components/pdf/PDFDownloadBtn'
+import SendEmailDialog from '@/components/email/SendEmailDialog'
 import { useCreditNotes } from '@/hooks/useCreditNotes'
+import { useWorkspaceStore } from '@/store/useWorkspaceStore'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import type { CreditNote, CreditNoteItem, CreditNoteStatus } from '@/types'
 
@@ -41,6 +44,7 @@ export default function CreditNoteDetail() {
   const navigate = useNavigate()
   const { getCreditNote, updateCreditNoteStatus, deleteCreditNote, error } =
     useCreditNotes()
+  const { workspace } = useWorkspaceStore()
 
   const [creditNote, setCreditNote] = useState<CreditNote | null>(null)
   const [items, setItems] = useState<CreditNoteItem[]>([])
@@ -122,7 +126,27 @@ export default function CreditNoteDetail() {
           </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          {workspace && (
+            <PDFDownloadBtn
+              type="credit_note"
+              document={creditNote}
+              items={items}
+              workspace={workspace}
+              filename={creditNote.credit_note_number}
+            />
+          )}
+          {workspace && (
+            <SendEmailDialog
+              type="credit_note"
+              document={creditNote}
+              items={items}
+              workspace={workspace}
+              docNumber={creditNote.credit_note_number}
+              customerEmail={creditNote.customer_email}
+              onSent={() => handleStatusChange('sent')}
+            />
+          )}
           <Button variant="outline" size="sm" onClick={() => navigate(`/credit-notes/${creditNote.id}/edit`)}>
             <Pencil className="mr-2 h-4 w-4" />
             수정

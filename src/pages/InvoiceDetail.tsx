@@ -36,7 +36,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import InvoiceStatusBadge from '@/components/invoice/InvoiceStatusBadge'
+import PDFDownloadBtn from '@/components/pdf/PDFDownloadBtn'
+import SendEmailDialog from '@/components/email/SendEmailDialog'
 import { useInvoices } from '@/hooks/useInvoices'
+import { useWorkspaceStore } from '@/store/useWorkspaceStore'
 import { supabase } from '@/lib/supabase'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import type { Invoice, InvoiceItem, InvoiceStatus, CreditNote, Quote } from '@/types'
@@ -46,6 +49,7 @@ export default function InvoiceDetail() {
   const navigate = useNavigate()
   const { getInvoice, updateInvoiceStatus, deleteInvoice, error } =
     useInvoices()
+  const { workspace } = useWorkspaceStore()
 
   const [invoice, setInvoice] = useState<Invoice | null>(null)
   const [items, setItems] = useState<InvoiceItem[]>([])
@@ -148,7 +152,27 @@ export default function InvoiceDetail() {
           </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          {workspace && (
+            <PDFDownloadBtn
+              type="invoice"
+              document={invoice}
+              items={items}
+              workspace={workspace}
+              filename={invoice.invoice_number}
+            />
+          )}
+          {workspace && (
+            <SendEmailDialog
+              type="invoice"
+              document={invoice}
+              items={items}
+              workspace={workspace}
+              docNumber={invoice.invoice_number}
+              customerEmail={invoice.customer_email}
+              onSent={() => handleStatusChange('sent')}
+            />
+          )}
           <Button
             size="sm"
             variant="outline"

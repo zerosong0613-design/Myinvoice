@@ -178,3 +178,19 @@ export interface MonthlyRevenue {
   paid_total: number
   total: number
 }
+
+export type MemberRole = 'owner' | 'admin' | 'member'
+export type InvitationStatus = 'pending' | 'accepted' | 'expired' | 'cancelled'
+
+export interface Invitation {
+  id: string
+  workspace_id: string
+  invited_by: string
+  email: string | null
+  token: string
+  role: MemberRole
+  status: InvitationStatus
+  expires_at: string
+  accepted_at: string | null
+  created_at: string
+}

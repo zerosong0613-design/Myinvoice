@@ -20,6 +20,7 @@ import Categories from '@/pages/Categories'
 import Statistics from '@/pages/Statistics'
 import SettingsPage from '@/pages/Settings'
 import WorkspaceSetup from '@/pages/WorkspaceSetup'
+import InviteAccept from '@/pages/InviteAccept'
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/workspace-setup" element={<WorkspaceSetup />} />
+          <Route path="/invite/:token" element={<InviteAccept />} />
           <Route
             element={
               <AuthGuard>

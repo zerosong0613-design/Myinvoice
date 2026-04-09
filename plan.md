@@ -4,7 +4,7 @@
 > 스택: Vite + React + TypeScript · shadcn/ui · Supabase · Vercel  
 > GitHub: https://github.com/zerosong0613-design/Myinvoice  
 > 배포: https://myinvoice-mu.vercel.app  
-> 최초 작성: 2026-04-08 · 최종 수정: 2026-04-08
+> 최초 작성: 2026-04-08 · 최종 수정: 2026-04-09
 
 ---
 
@@ -39,6 +39,16 @@
 - [x] Supabase RLS 정책 (워크스페이스 멤버 기반 접근 제어)
 - [x] Vercel 배포 + 환경변수 설정
 
+### Phase 1.5 — 문서 연동 & 완성도 ✅ 완료 (2026-04-09)
+- [x] 워크스페이스 로그인 버그 수정 (기존 워크스페이스 확인 + 재시도 로직)
+- [x] 견적서 → 청구서 변환 (품목/거래처 자동 복사, 상태 연동)
+- [x] 청구서 → 신용전표 발행 (품목/거래처 자동 복사)
+- [x] 청구서 상세에서 관련 문서 표시 (원본 견적서, 연결 신용전표)
+- [x] 대시보드 확장 (견적서/신용전표 KPI + 최근 목록)
+- [x] PDF 출력 — 한국 세금계산서 스타일 (@react-pdf/renderer, Noto Sans KR)
+- [x] 이메일 발송 — Resend API + Vercel Serverless Function + PDF 첨부
+- [x] DB 마이그레이션 004: source_quote_id, converted_invoice_id 컬럼
+
 ### Phase 2 — 팀 협업 (멀티 사용자) 🔜 다음
 - [ ] 멤버 이메일 초대 (초대 링크 생성 → 수락 시 워크스페이스 합류)
 - [ ] 역할 권한 분기: owner(전체) / admin(관리) / member(조회·생성)
@@ -47,11 +57,12 @@
 - [ ] 활동 로그 (누가 청구서를 생성/수정했는지)
 
 ### Phase 3 — 완성도
-- [ ] PDF 출력 (react-pdf 또는 html2canvas → Supabase Storage)
+- [x] PDF 출력 (세금계산서 스타일, 클라이언트 사이드)
+- [x] 이메일 발송 (Resend API, PDF 첨부)
 - [ ] 청구서 공유 링크 (토큰 기반 공개 URL, 고객이 브라우저에서 열람)
-- [ ] 이메일 발송 (Resend API)
 - [ ] 반복 청구서 (정기 고객용 복사 생성)
 - [ ] 설정: 로고 업로드, 기본 납부기한, 메모 템플릿
+- [ ] 상태 라벨 정리 ("발송됨" → "발행완료" 등)
 
 ### Phase 4 — 한국 특화 (선택)
 - [ ] 원천세 3.3% 계산 옵션
@@ -69,10 +80,11 @@
 | 상태관리 | Zustand | useAuthStore, useWorkspaceStore |
 | 백엔드/DB | Supabase (PostgreSQL + RLS) | 무료 티어 |
 | 인증 | Supabase Auth + Google OAuth | |
+| PDF | @react-pdf/renderer | 한국 세금계산서 스타일, Noto Sans KR |
 | 아이콘 | Lucide React | |
 | 차트 | Recharts | 월별 매출 |
-| 배포 | Vercel | Git 연동 자동 배포 |
-| 이메일 | Resend (Phase 3) | 무료 3,000통/월 |
+| 배포 | Vercel | Git 연동 자동 배포 + Serverless Functions |
+| 이메일 | Resend | 무료 3,000통/월, Vercel API Route |
 
 ---
 
@@ -85,11 +97,11 @@ workspace_members       — 멤버 & 역할
 categories              — 품목 카테고리 (자기참조 트리)
 customers               — 거래처
 products                — 품목 (category_id 연결)
-invoices                — 청구서
+invoices                — 청구서 (source_quote_id 추가)
 invoice_items           — 청구서 품목
-quotes                  — 견적서
+quotes                  — 견적서 (converted_invoice_id 추가)
 quote_items             — 견적서 품목
-credit_notes            — 신용전표
+credit_notes            — 신용전표 (original_invoice_id)
 credit_note_items       — 신용전표 품목
 ```
 
@@ -111,14 +123,18 @@ update_updated_at()     — updated_at 자동 갱신 트리거
 
 ```
 MyInvoice/
+├── api/
+│   └── send-email.ts          # Vercel Serverless Function (Resend)
 ├── src/
 │   ├── components/
-│   │   ├── ui/               # shadcn/ui (14개 컴포넌트)
-│   │   ├── layout/           # AuthGuard, Layout, Sidebar
-│   │   ├── invoice/          # InvoiceStatusBadge, QuoteStatusBadge, CreditNoteStatusBadge
-│   │   ├── customer/         # CustomerDialog
-│   │   ├── product/          # ProductDialog
-│   │   └── category/         # CategoryDialog
+│   │   ├── ui/                # shadcn/ui (15개 컴포넌트)
+│   │   ├── layout/            # AuthGuard, Layout, Sidebar
+│   │   ├── invoice/           # InvoiceStatusBadge, QuoteStatusBadge, CreditNoteStatusBadge
+│   │   ├── pdf/               # DocumentPDF, PDFDownloadBtn
+│   │   ├── email/             # SendEmailDialog
+│   │   ├── customer/          # CustomerDialog
+│   │   ├── product/           # ProductDialog
+│   │   └── category/          # CategoryDialog
 │   ├── hooks/
 │   │   ├── useInvoices.ts
 │   │   ├── useQuotes.ts
@@ -149,10 +165,11 @@ MyInvoice/
 │   ├── main.tsx
 │   └── index.css
 ├── supabase/migrations/
-│   ├── 001_initial.sql       # (원본, 한글 주석 포함)
-│   ├── 001_clean.sql         # 실제 실행한 통합 SQL
+│   ├── 001_initial.sql
+│   ├── 001_clean.sql
 │   ├── 002_fix_rls_insert.sql
-│   └── 003_categories.sql
+│   ├── 003_categories.sql
+│   └── 004_document_linking.sql
 ├── .env.local
 ├── package.json
 ├── vite.config.ts
@@ -164,10 +181,15 @@ MyInvoice/
 ## 6. 환경변수
 
 ```
+# .env.local (프론트엔드)
 VITE_SUPABASE_URL=https://kpizzslepjubluvetess.supabase.co
 VITE_SUPABASE_ANON_KEY=sb_publishable_NJ_BbGFpI8zHeQ2rTgxreQ_jYHlxGSt
+
+# Vercel 환경변수 (서버 사이드)
+RESEND_API_KEY=           # ⚠️ 설정 필요 — Resend에서 발급
+RESEND_FROM_EMAIL=        # 선택, 기본값: noreply@resend.dev
 ```
-Vercel에도 동일하게 등록 완료.
+Vercel에도 동일하게 등록 완료 (Resend 키 제외).
 
 ---
 
@@ -177,6 +199,8 @@ Vercel에도 동일하게 등록 완료.
 |------|------|-----------|
 | Supabase Auth Redirect URL | ⚠️ 미완료 | Supabase Auth → URL Configuration → Site URL을 `https://myinvoice-mu.vercel.app`로 변경, Redirect URLs에 Vercel URL 추가 |
 | Google OAuth Redirect URI | ⚠️ 확인 필요 | Google Cloud Console에서 `https://kpizzslepjubluvetess.supabase.co/auth/v1/callback` 등록 확인 |
+| DB 마이그레이션 004 | ⚠️ 실행 필요 | Supabase SQL Editor에서 `004_document_linking.sql` 실행 (source_quote_id, converted_invoice_id) |
+| Resend API Key | ⚠️ 설정 필요 | Vercel 환경변수에 `RESEND_API_KEY` 추가 |
 
 ---
 
@@ -184,11 +208,11 @@ Vercel에도 동일하게 등록 완료.
 
 | 이슈 | 옵션 A | 옵션 B | 결정 시점 |
 |------|--------|--------|-----------|
-| PDF 생성 방식 | react-pdf (클라이언트) | Supabase Edge Function + puppeteer | Phase 3 |
 | 초대 방식 | 이메일 초대 링크 | 초대 코드 입력 | Phase 2 시작 시 |
 | 모바일 지원 | 반응형 웹 | 별도 앱 | 오픈 후 피드백 |
 | 세금계산서 연동 | 직접 개발 | 단순 링크 안내 | Phase 4 |
+| 공유 링크 인증 | 토큰 기반 | 비밀번호 | Phase 3 |
 
 ---
 
-_last updated: 2026-04-08_
+_last updated: 2026-04-09_

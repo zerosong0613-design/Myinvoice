@@ -31,7 +31,8 @@ import {
   SheetTrigger,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import type { Workspace } from '@/types'
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: '대시보드' },
@@ -47,8 +48,33 @@ const navItems = [
 
 function NavContent({ onClose }: { onClose?: () => void }) {
   const { user } = useAuthStore()
-  const { workspace } = useWorkspaceStore()
+  const { workspace, setWorkspace } = useWorkspaceStore()
   const navigate = useNavigate()
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([])
+
+  useEffect(() => {
+    if (!user) return
+    const loadWorkspaces = async () => {
+      const { data } = await supabase
+        .from('workspace_members')
+        .select('workspace_id, workspaces(*)')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+      if (data) {
+        setWorkspaces(
+          data
+            .map((d) => d.workspaces as unknown as Workspace)
+            .filter(Boolean)
+        )
+      }
+    }
+    loadWorkspaces()
+  }, [user])
+
+  const handleSwitchWorkspace = (ws: Workspace) => {
+    setWorkspace(ws)
+    navigate('/')
+  }
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -57,12 +83,36 @@ function NavContent({ onClose }: { onClose?: () => void }) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-2 px-4 py-5">
-        <FileText className="h-6 w-6 text-primary" />
-        <span className="font-semibold truncate">
-          {workspace?.name ?? '마이인보이스'}
-        </span>
-      </div>
+      {workspaces.length > 1 ? (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex w-full items-center gap-2 px-4 py-5 text-left hover:bg-accent transition-colors">
+              <FileText className="h-6 w-6 text-primary shrink-0" />
+              <span className="font-semibold truncate">
+                {workspace?.name ?? '마이인보이스'}
+              </span>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-56">
+            {workspaces.map((ws) => (
+              <DropdownMenuItem
+                key={ws.id}
+                onClick={() => handleSwitchWorkspace(ws)}
+                className={cn(ws.id === workspace?.id && 'bg-accent')}
+              >
+                {ws.name}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ) : (
+        <div className="flex items-center gap-2 px-4 py-5">
+          <FileText className="h-6 w-6 text-primary" />
+          <span className="font-semibold truncate">
+            {workspace?.name ?? '마이인보이스'}
+          </span>
+        </div>
+      )}
 
       <Separator />
 

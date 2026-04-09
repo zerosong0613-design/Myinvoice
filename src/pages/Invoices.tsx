@@ -71,11 +71,16 @@ export default function Invoices() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold">청구서</h1>
-          <Badge variant="secondary" className="text-sm">
-            {filtered.length}
-          </Badge>
+        <div>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold">청구서</h1>
+            <Badge variant="secondary" className="text-sm">
+              {filtered.length}
+            </Badge>
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            거래처에 보낼 청구서를 작성하고 관리하세요. PDF 다운로드와 이메일 발송이 가능합니다.
+          </p>
         </div>
         <Link to="/invoices/new">
           <Button>

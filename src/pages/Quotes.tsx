@@ -71,11 +71,16 @@ export default function Quotes() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold">견적서</h1>
-          <Badge variant="secondary" className="text-sm">
-            {filtered.length}
-          </Badge>
+        <div>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold">견적서</h1>
+            <Badge variant="secondary" className="text-sm">
+              {filtered.length}
+            </Badge>
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            거래 전 가격을 제안하는 견적서입니다. 고객이 수락하면 청구서로 바로 변환할 수 있어요.
+          </p>
         </div>
         <Link to="/quotes/new">
           <Button>

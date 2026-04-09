@@ -84,7 +84,12 @@ export default function Products() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">품목 관리</h1>
+        <div>
+          <h1 className="text-2xl font-bold">품목 관리</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            자주 사용하는 상품·서비스를 등록하면 문서 작성 시 단가가 자동으로 입력돼요.
+          </p>
+        </div>
         <Button onClick={handleCreate}>
           <Plus className="mr-2 h-4 w-4" />
           품목 추가

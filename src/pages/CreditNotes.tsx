@@ -66,11 +66,16 @@ export default function CreditNotes() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold">신용전표</h1>
-          <Badge variant="secondary" className="text-sm">
-            {filtered.length}
-          </Badge>
+        <div>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold">신용전표</h1>
+            <Badge variant="secondary" className="text-sm">
+              {filtered.length}
+            </Badge>
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            이미 발행한 청구서 금액을 줄이거나 취소할 때 사용합니다. (반품, 할인, 과다청구 등)
+          </p>
         </div>
         <Link to="/credit-notes/new">
           <Button>

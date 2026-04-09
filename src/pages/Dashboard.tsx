@@ -123,58 +123,63 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       {/* 환영 메시지 */}
-      <div className="rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
-        <h1 className="text-2xl font-bold">안녕하세요, {userName}님!</h1>
-        <p className="mt-1 text-sm text-blue-100">
-          {workspace?.name}의 청구서와 견적서를 한눈에 관리하세요.
-        </p>
-        <div className="mt-4 flex gap-2">
-          <Link to="/invoices/new">
-            <Button className="bg-white text-blue-600 hover:bg-blue-50">
-              <Plus className="mr-2 h-4 w-4" />
-              새 청구서
-            </Button>
-          </Link>
-          <Link to="/quotes/new">
-            <Button variant="outline" className="border-white/40 text-white hover:bg-white/10">
-              <Plus className="mr-2 h-4 w-4" />
-              새 견적서
-            </Button>
-          </Link>
+      <div className="rounded-xl border bg-card p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">안녕하세요, {userName}님!</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {workspace?.name}의 청구서와 견적서를 한눈에 관리하세요.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Link to="/invoices/new">
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                새 청구서
+              </Button>
+            </Link>
+            <Link to="/quotes/new">
+              <Button variant="outline">
+                <Plus className="mr-2 h-4 w-4" />
+                새 견적서
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
       {/* 초보자 안내 — 문서가 하나도 없을 때 */}
       {totalCount === 0 && recentQuotes.length === 0 && (
-        <Card className="border-dashed border-blue-300 bg-blue-50/50">
-          <CardContent className="py-6">
-            <h3 className="font-semibold text-blue-900">시작하기</h3>
-            <div className="mt-3 grid gap-3 text-sm text-blue-800 sm:grid-cols-3">
-              <div className="rounded-md bg-white p-3">
-                <p className="font-medium">1. 거래처 등록</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  자주 거래하는 업체를 미리 등록하면 청구서 작성이 빨라져요.
-                </p>
-              </div>
-              <div className="rounded-md bg-white p-3">
-                <p className="font-medium">2. 견적서 작성</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  견적서를 먼저 보내고, 수락되면 청구서로 변환할 수 있어요.
-                </p>
-              </div>
-              <div className="rounded-md bg-white p-3">
-                <p className="font-medium">3. 청구서 발행</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  청구서를 PDF로 다운로드하거나 이메일로 바로 보낼 수 있어요.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="rounded-xl border border-dashed p-6">
+          <h3 className="font-semibold">처음이신가요? 이렇게 시작해보세요!</h3>
+          <div className="mt-4 grid gap-4 sm:grid-cols-3">
+            <Link to="/customers" className="group rounded-lg border p-4 transition-colors hover:border-primary hover:bg-primary/5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-600">1</div>
+              <p className="mt-3 font-medium group-hover:text-primary">거래처 등록</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                자주 거래하는 업체를 등록하면 문서 작성이 훨씬 빨라져요.
+              </p>
+            </Link>
+            <Link to="/quotes/new" className="group rounded-lg border p-4 transition-colors hover:border-primary hover:bg-primary/5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-sm font-bold text-green-600">2</div>
+              <p className="mt-3 font-medium group-hover:text-primary">견적서 작성</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                견적서를 보내고, 고객이 수락하면 청구서로 바로 변환할 수 있어요.
+              </p>
+            </Link>
+            <Link to="/invoices/new" className="group rounded-lg border p-4 transition-colors hover:border-primary hover:bg-primary/5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 text-sm font-bold text-purple-600">3</div>
+              <p className="mt-3 font-medium group-hover:text-primary">청구서 발행</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                PDF 다운로드, 이메일 발송까지 한 곳에서 해결하세요.
+              </p>
+            </Link>
+          </div>
+        </div>
       )}
 
       {/* KPI Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">이번 달 매출</CardTitle>

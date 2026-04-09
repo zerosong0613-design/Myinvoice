@@ -66,7 +66,12 @@ export default function Customers() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">거래처 관리</h1>
+        <div>
+          <h1 className="text-2xl font-bold">거래처 관리</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            자주 거래하는 업체를 등록하면 청구서·견적서 작성 시 자동으로 불러올 수 있어요.
+          </p>
+        </div>
         <Button onClick={handleCreate}>
           <Plus className="mr-2 h-4 w-4" />
           거래처 추가

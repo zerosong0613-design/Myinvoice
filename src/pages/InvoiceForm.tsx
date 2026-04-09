@@ -22,6 +22,7 @@ import {
 import { useInvoices, type InvoiceItemInput } from '@/hooks/useInvoices'
 import { useCustomers } from '@/hooks/useCustomers'
 import { useProducts } from '@/hooks/useProducts'
+import { useWorkspaceStore } from '@/store/useWorkspaceStore'
 import { supabase } from '@/lib/supabase'
 import { formatCurrency } from '@/lib/utils'
 import type { InvoiceStatus, TaxType } from '@/types'
@@ -59,6 +60,7 @@ export default function InvoiceForm() {
   const navigate = useNavigate()
   const location = useLocation()
   const quoteState = location.state as QuoteConvertState | null
+  const { workspace } = useWorkspaceStore()
 
   const {
     getInvoice,
@@ -75,10 +77,17 @@ export default function InvoiceForm() {
   const [customerId, setCustomerId] = useState<string | null>(quoteState?.customerId ?? null)
   const [customerName, setCustomerName] = useState(quoteState?.customerName ?? '')
   const [customerEmail, setCustomerEmail] = useState<string | null>(quoteState?.customerEmail ?? null)
+  const defaultDueDays = workspace?.default_due_days ?? 30
+  const defaultDueDate = () => {
+    const d = new Date()
+    d.setDate(d.getDate() + defaultDueDays)
+    return d.toISOString().split('T')[0]
+  }
+
   const [issuedAt, setIssuedAt] = useState(today())
-  const [dueAt, setDueAt] = useState('')
-  const [taxType, setTaxType] = useState<TaxType>(quoteState?.taxType ?? 'exclusive')
-  const [memo, setMemo] = useState(quoteState?.memo ?? '')
+  const [dueAt, setDueAt] = useState(defaultDueDate())
+  const [taxType, setTaxType] = useState<TaxType>(quoteState?.taxType ?? (workspace?.default_tax_type as TaxType) ?? 'exclusive')
+  const [memo, setMemo] = useState(quoteState?.memo ?? workspace?.default_memo ?? '')
   const [items, setItems] = useState<InvoiceItemInput[]>(
     quoteState?.items && quoteState.items.length > 0 ? quoteState.items : [emptyItem()]
   )

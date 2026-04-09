@@ -22,6 +22,7 @@ import SettingsPage from '@/pages/Settings'
 import WorkspaceSetup from '@/pages/WorkspaceSetup'
 import WorkspaceSelect from '@/pages/WorkspaceSelect'
 import InviteAccept from '@/pages/InviteAccept'
+import ShareView from '@/pages/ShareView'
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="/workspace-setup" element={<WorkspaceSetup />} />
           <Route path="/workspace-select" element={<WorkspaceSelect />} />
           <Route path="/invite/:token" element={<InviteAccept />} />
+          <Route path="/share/:token" element={<ShareView />} />
           <Route
             element={
               <AuthGuard>

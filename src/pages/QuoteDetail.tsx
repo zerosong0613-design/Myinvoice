@@ -9,6 +9,7 @@ import {
   XCircle,
   Clock,
   FileText,
+  Share2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -38,6 +39,7 @@ import QuoteStatusBadge from '@/components/invoice/QuoteStatusBadge'
 import PDFDownloadBtn from '@/components/pdf/PDFDownloadBtn'
 import SendEmailDialog from '@/components/email/SendEmailDialog'
 import { useQuotes } from '@/hooks/useQuotes'
+import { useShareLink } from '@/hooks/useShareLink'
 import { useWorkspaceStore } from '@/store/useWorkspaceStore'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import type { Quote, QuoteItem, QuoteStatus } from '@/types'
@@ -47,6 +49,7 @@ export default function QuoteDetail() {
   const navigate = useNavigate()
   const { getQuote, updateQuoteStatus, deleteQuote, error } = useQuotes()
   const { workspace } = useWorkspaceStore()
+  const { createShareLink } = useShareLink()
 
   const [quote, setQuote] = useState<Quote | null>(null)
   const [items, setItems] = useState<QuoteItem[]>([])
@@ -139,6 +142,20 @@ export default function QuoteDetail() {
               filename={quote.quote_number}
             />
           )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              const link = await createShareLink('quote', quote.id)
+              if (link) {
+                await navigator.clipboard.writeText(link)
+                alert('공유 링크가 복사되었습니다!')
+              }
+            }}
+          >
+            <Share2 className="mr-2 h-4 w-4" />
+            공유
+          </Button>
           {workspace && (
             <SendEmailDialog
               type="quote"

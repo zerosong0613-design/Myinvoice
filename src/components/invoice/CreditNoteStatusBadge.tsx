@@ -12,7 +12,7 @@ const STATUS_CONFIG: Record<
     className: '',
   },
   sent: {
-    label: '발송됨',
+    label: '발행완료',
     variant: 'default',
     className: 'bg-blue-500 hover:bg-blue-600',
   },

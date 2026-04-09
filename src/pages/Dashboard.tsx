@@ -8,6 +8,7 @@ import {
   Plus,
   ClipboardList,
   CreditCard,
+  Activity,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -30,6 +31,7 @@ import CreditNoteStatusBadge from '@/components/invoice/CreditNoteStatusBadge'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/store/useAuthStore'
 import { useWorkspaceStore } from '@/store/useWorkspaceStore'
+import { useActivityLog, formatAction, formatTargetType } from '@/hooks/useActivityLog'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import type { WorkspaceInvoiceStats, Invoice, InvoiceStatus, Quote, QuoteStatus, CreditNote, CreditNoteStatus } from '@/types'
 
@@ -51,6 +53,7 @@ export default function Dashboard() {
   const [pendingQuotesCount, setPendingQuotesCount] = useState(0)
   const [creditNotesTotal, setCreditNotesTotal] = useState(0)
   const [loading, setLoading] = useState(true)
+  const { logs: activityLogs, fetchLogs } = useActivityLog()
 
   useEffect(() => {
     async function load() {
@@ -105,7 +108,8 @@ export default function Dashboard() {
       setLoading(false)
     }
     load()
-  }, [workspace])
+    fetchLogs(10)
+  }, [workspace, fetchLogs])
 
   const totalCount =
     stats
@@ -393,6 +397,36 @@ export default function Dashboard() {
                   ))}
                 </TableBody>
               </Table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      {/* 최근 활동 */}
+      {activityLogs.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-4 w-4" />
+              최근 활동
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {activityLogs.map((log) => (
+                <div key={log.id} className="flex items-start gap-3 text-sm">
+                  <div className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-blue-400" />
+                  <div className="flex-1">
+                    <span className="font-medium">{formatTargetType(log.target_type)}</span>
+                    {log.target_label && (
+                      <span className="text-muted-foreground"> "{log.target_label}"</span>
+                    )}
+                    <span className="text-muted-foreground">을(를) {formatAction(log.action)}</span>
+                  </div>
+                  <span className="shrink-0 text-xs text-muted-foreground">
+                    {new Date(log.created_at).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>

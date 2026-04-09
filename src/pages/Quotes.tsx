@@ -21,7 +21,7 @@ import type { QuoteStatus } from '@/types'
 const STATUS_TABS: { value: string; label: string }[] = [
   { value: 'all', label: '전체' },
   { value: 'draft', label: '임시저장' },
-  { value: 'sent', label: '발송됨' },
+  { value: 'sent', label: '발행완료' },
   { value: 'accepted', label: '수락됨' },
   { value: 'rejected', label: '거절됨' },
   { value: 'expired', label: '만료됨' },
@@ -61,7 +61,7 @@ export default function Quotes() {
   const emptyMessages: Record<string, string> = {
     all: '등록된 견적서가 없습니다.',
     draft: '임시저장된 견적서가 없습니다.',
-    sent: '발송된 견적서가 없습니다.',
+    sent: '발행완료된 견적서가 없습니다.',
     accepted: '수락된 견적서가 없습니다.',
     rejected: '거절된 견적서가 없습니다.',
     expired: '만료된 견적서가 없습니다.',

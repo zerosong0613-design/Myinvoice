@@ -6,6 +6,7 @@ import {
   Trash2,
   Send,
   CheckCircle2,
+  Share2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -35,6 +36,7 @@ import CreditNoteStatusBadge from '@/components/invoice/CreditNoteStatusBadge'
 import PDFDownloadBtn from '@/components/pdf/PDFDownloadBtn'
 import SendEmailDialog from '@/components/email/SendEmailDialog'
 import { useCreditNotes } from '@/hooks/useCreditNotes'
+import { useShareLink } from '@/hooks/useShareLink'
 import { useWorkspaceStore } from '@/store/useWorkspaceStore'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import type { CreditNote, CreditNoteItem, CreditNoteStatus } from '@/types'
@@ -45,6 +47,7 @@ export default function CreditNoteDetail() {
   const { getCreditNote, updateCreditNoteStatus, deleteCreditNote, error } =
     useCreditNotes()
   const { workspace } = useWorkspaceStore()
+  const { createShareLink } = useShareLink()
 
   const [creditNote, setCreditNote] = useState<CreditNote | null>(null)
   const [items, setItems] = useState<CreditNoteItem[]>([])
@@ -136,6 +139,20 @@ export default function CreditNoteDetail() {
               filename={creditNote.credit_note_number}
             />
           )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              const link = await createShareLink('credit_note', creditNote.id)
+              if (link) {
+                await navigator.clipboard.writeText(link)
+                alert('공유 링크가 복사되었습니다!')
+              }
+            }}
+          >
+            <Share2 className="mr-2 h-4 w-4" />
+            공유
+          </Button>
           {workspace && (
             <SendEmailDialog
               type="credit_note"

@@ -60,6 +60,9 @@ export default function Settings() {
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
   const [memo, setMemo] = useState('')
+  const [defaultDueDays, setDefaultDueDays] = useState(30)
+  const [defaultMemo, setDefaultMemo] = useState('')
+  const [defaultTaxType, setDefaultTaxType] = useState('exclusive')
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
 
@@ -84,6 +87,9 @@ export default function Settings() {
       setPhone(workspace.phone ?? '')
       setEmail(workspace.email ?? '')
       setMemo(workspace.memo ?? '')
+      setDefaultDueDays(workspace.default_due_days ?? 30)
+      setDefaultMemo(workspace.default_memo ?? '')
+      setDefaultTaxType(workspace.default_tax_type ?? 'exclusive')
     }
   }, [workspace])
 
@@ -135,6 +141,9 @@ export default function Settings() {
           phone: phone.trim() || null,
           email: email.trim() || null,
           memo: memo.trim() || null,
+          default_due_days: defaultDueDays || 30,
+          default_memo: defaultMemo.trim() || null,
+          default_tax_type: defaultTaxType,
         })
         .eq('id', workspace.id)
         .select()
@@ -229,18 +238,66 @@ export default function Settings() {
                 <Label>메모</Label>
                 <Textarea value={memo} onChange={(e) => setMemo(e.target.value)} placeholder="메모 (선택)" rows={3} />
               </div>
-              {message && (
-                <div className={`rounded-md p-3 text-sm ${message.includes('저장되었습니다') ? 'bg-green-50 text-green-700' : 'bg-destructive/10 text-destructive'}`}>
-                  {message}
+            </CardContent>
+          </Card>
+
+          {/* 기본 설정 */}
+          <Card>
+            <CardHeader>
+              <CardTitle>기본 설정</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                새 청구서·견적서 작성 시 자동으로 적용되는 기본값입니다.
+              </p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>기본 납부기한 (일)</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={defaultDueDays}
+                    onChange={(e) => setDefaultDueDays(Number(e.target.value) || 30)}
+                    placeholder="30"
+                  />
+                  <p className="text-xs text-muted-foreground">발행일로부터 며칠 후가 납기일인지 설정</p>
                 </div>
-              )}
-              <div className="flex justify-end">
-                <Button onClick={handleSave} disabled={saving}>
-                  {saving ? '저장 중...' : '저장'}
-                </Button>
+                <div className="space-y-2">
+                  <Label>기본 부가세 유형</Label>
+                  <Select value={defaultTaxType} onValueChange={(v) => v && setDefaultTaxType(v)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="exclusive">별도 (공급가 + 10%)</SelectItem>
+                      <SelectItem value="inclusive">포함 (총액에 포함)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>기본 메모 템플릿</Label>
+                <Textarea
+                  value={defaultMemo}
+                  onChange={(e) => setDefaultMemo(e.target.value)}
+                  placeholder="예: 입금계좌 - 국민은행 000-000-000 (주)회사명"
+                  rows={3}
+                />
+                <p className="text-xs text-muted-foreground">새 문서 작성 시 메모란에 자동 입력됩니다.</p>
               </div>
             </CardContent>
           </Card>
+
+          {message && (
+            <div className={`rounded-md p-3 text-sm ${message.includes('저장되었습니다') ? 'bg-green-50 text-green-700' : 'bg-destructive/10 text-destructive'}`}>
+              {message}
+            </div>
+          )}
+          <div className="flex justify-end">
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? '저장 중...' : '저장'}
+            </Button>
+          </div>
         </TabsContent>
 
         {/* 멤버 관리 탭 */}

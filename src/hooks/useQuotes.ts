@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useWorkspaceStore } from '@/store/useWorkspaceStore'
 import { useAuthStore } from '@/store/useAuthStore'
+import { useActivityLog } from '@/hooks/useActivityLog'
 import type { Quote, QuoteItem, QuoteStatus, TaxType } from '@/types'
 
 export interface QuoteInput {
@@ -31,6 +32,7 @@ export function useQuotes() {
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { log: activityLog } = useActivityLog()
 
   const fetchQuotes = useCallback(
     async (statusFilter?: string) => {
@@ -189,6 +191,7 @@ export function useQuotes() {
         if (itemsError) throw itemsError
 
         setQuotes((prev) => [quote as Quote, ...prev])
+        activityLog('created', 'quote', quote.id, quoteNumber)
         return quote as Quote
       } catch (err) {
         setError(

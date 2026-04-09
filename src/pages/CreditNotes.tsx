@@ -21,7 +21,7 @@ import type { CreditNoteStatus } from '@/types'
 const STATUS_TABS: { value: string; label: string }[] = [
   { value: 'all', label: '전체' },
   { value: 'draft', label: '임시저장' },
-  { value: 'sent', label: '발송됨' },
+  { value: 'sent', label: '발행완료' },
   { value: 'applied', label: '적용됨' },
 ]
 
@@ -59,7 +59,7 @@ export default function CreditNotes() {
   const emptyMessages: Record<string, string> = {
     all: '등록된 신용전표가 없습니다.',
     draft: '임시저장된 신용전표가 없습니다.',
-    sent: '발송된 신용전표가 없습니다.',
+    sent: '발행완료된 신용전표가 없습니다.',
     applied: '적용된 신용전표가 없습니다.',
   }
 

@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useWorkspaceStore } from '@/store/useWorkspaceStore'
 import { useAuthStore } from '@/store/useAuthStore'
+import { useActivityLog } from '@/hooks/useActivityLog'
 import type { Invoice, InvoiceItem, InvoiceStatus, TaxType } from '@/types'
 
 export interface InvoiceInput {
@@ -32,6 +33,7 @@ export function useInvoices() {
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { log: activityLog } = useActivityLog()
 
   const fetchInvoices = useCallback(
     async (statusFilter?: string) => {
@@ -202,6 +204,7 @@ export function useInvoices() {
         }
 
         setInvoices((prev) => [invoice as Invoice, ...prev])
+        activityLog('created', 'invoice', invoice.id, invoiceNumber)
         return invoice as Invoice
       } catch (err) {
         setError(
@@ -313,6 +316,7 @@ export function useInvoices() {
         setInvoices((prev) =>
           prev.map((inv) => (inv.id === id ? { ...inv, status } : inv))
         )
+        activityLog('status_changed', 'invoice', id, undefined, { status })
         return true
       } catch (err) {
         setError(

@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useWorkspaceStore } from '@/store/useWorkspaceStore'
 import { useAuthStore } from '@/store/useAuthStore'
+import { useActivityLog } from '@/hooks/useActivityLog'
 import type { CreditNote, CreditNoteItem, CreditNoteStatus, TaxType } from '@/types'
 
 export interface CreditNoteInput {
@@ -31,6 +32,7 @@ export function useCreditNotes() {
   const [creditNotes, setCreditNotes] = useState<CreditNote[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { log: activityLog } = useActivityLog()
 
   const fetchCreditNotes = useCallback(
     async (statusFilter?: string) => {
@@ -189,6 +191,7 @@ export function useCreditNotes() {
         if (itemsError) throw itemsError
 
         setCreditNotes((prev) => [creditNote as CreditNote, ...prev])
+        activityLog('created', 'credit_note', creditNote.id, creditNoteNumber)
         return creditNote as CreditNote
       } catch (err) {
         setError(

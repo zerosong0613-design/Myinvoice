@@ -8,6 +8,9 @@ export interface Workspace {
   phone: string | null
   email: string | null
   memo: string | null
+  default_due_days: number | null
+  default_memo: string | null
+  default_tax_type: string | null
   created_at: string
   deleted_at: string | null
 }

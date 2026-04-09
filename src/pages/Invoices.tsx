@@ -21,7 +21,7 @@ import type { InvoiceStatus } from '@/types'
 const STATUS_TABS: { value: string; label: string }[] = [
   { value: 'all', label: '전체' },
   { value: 'draft', label: '임시저장' },
-  { value: 'sent', label: '발송됨' },
+  { value: 'sent', label: '발행완료' },
   { value: 'paid', label: '결제완료' },
   { value: 'overdue', label: '연체' },
   { value: 'cancelled', label: '취소' },
@@ -61,7 +61,7 @@ export default function Invoices() {
   const emptyMessages: Record<string, string> = {
     all: '등록된 청구서가 없습니다.',
     draft: '임시저장된 청구서가 없습니다.',
-    sent: '발송된 청구서가 없습니다.',
+    sent: '발행완료된 청구서가 없습니다.',
     paid: '결제완료된 청구서가 없습니다.',
     overdue: '연체된 청구서가 없습니다.',
     cancelled: '취소된 청구서가 없습니다.',

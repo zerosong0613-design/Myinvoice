@@ -10,6 +10,8 @@ import {
   XCircle,
   FileText,
   CreditCard,
+  Share2,
+  Copy,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -39,6 +41,7 @@ import InvoiceStatusBadge from '@/components/invoice/InvoiceStatusBadge'
 import PDFDownloadBtn from '@/components/pdf/PDFDownloadBtn'
 import SendEmailDialog from '@/components/email/SendEmailDialog'
 import { useInvoices } from '@/hooks/useInvoices'
+import { useShareLink } from '@/hooks/useShareLink'
 import { useWorkspaceStore } from '@/store/useWorkspaceStore'
 import { supabase } from '@/lib/supabase'
 import { formatCurrency, formatDate } from '@/lib/utils'
@@ -50,6 +53,7 @@ export default function InvoiceDetail() {
   const { getInvoice, updateInvoiceStatus, deleteInvoice, error } =
     useInvoices()
   const { workspace } = useWorkspaceStore()
+  const { createShareLink } = useShareLink()
 
   const [invoice, setInvoice] = useState<Invoice | null>(null)
   const [items, setItems] = useState<InvoiceItem[]>([])
@@ -162,6 +166,20 @@ export default function InvoiceDetail() {
               filename={invoice.invoice_number}
             />
           )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              const link = await createShareLink('invoice', invoice.id)
+              if (link) {
+                await navigator.clipboard.writeText(link)
+                alert('공유 링크가 복사되었습니다!')
+              }
+            }}
+          >
+            <Share2 className="mr-2 h-4 w-4" />
+            공유
+          </Button>
           {workspace && (
             <SendEmailDialog
               type="invoice"
@@ -173,6 +191,35 @@ export default function InvoiceDetail() {
               onSent={() => handleStatusChange('sent')}
             />
           )}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() =>
+              navigate('/invoices/new', {
+                state: {
+                  fromQuote: false,
+                  quoteId: null,
+                  customerId: invoice.customer_id,
+                  customerName: invoice.customer_name,
+                  customerEmail: invoice.customer_email,
+                  taxType: invoice.tax_type,
+                  memo: invoice.memo,
+                  items: items.map((item) => ({
+                    product_id: item.product_id,
+                    name: item.name,
+                    description: item.description,
+                    quantity: item.quantity,
+                    unit_price: item.unit_price,
+                    amount: item.amount,
+                    sort_order: item.sort_order,
+                  })),
+                },
+              })
+            }
+          >
+            <Copy className="mr-2 h-4 w-4" />
+            복사
+          </Button>
           <Button
             size="sm"
             variant="outline"

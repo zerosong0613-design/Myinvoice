@@ -12,6 +12,7 @@ import {
   CreditCard,
   Share2,
   Copy,
+  Receipt,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -179,6 +180,53 @@ export default function InvoiceDetail() {
           >
             <Share2 className="mr-2 h-4 w-4" />
             공유
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              if (!workspace) return
+              if (!confirm('이 청구서를 기반으로 세금계산서를 발행하시겠습니까?\n(볼타 API 연동이 필요합니다)')) return
+              try {
+                const res = await fetch('/api/issue-tax-invoice', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    supplier: {
+                      bizNumber: workspace.biz_number,
+                      name: workspace.name,
+                      address: workspace.address,
+                      managerEmail: workspace.email,
+                    },
+                    receiver: {
+                      bizNumber: '',
+                      name: invoice.customer_name,
+                      email: invoice.customer_email,
+                    },
+                    items: items.map((item) => ({
+                      name: item.name,
+                      unitPrice: item.unit_price,
+                      quantity: item.quantity,
+                      supplyCost: item.amount,
+                      tax: Math.round(item.amount * 0.1),
+                    })),
+                    purpose: 'receipt',
+                    referenceId: invoice.id,
+                  }),
+                })
+                const data = await res.json()
+                if (data.success) {
+                  alert('세금계산서가 발행되었습니다!')
+                } else {
+                  alert(data.error ?? '발행에 실패했습니다.')
+                }
+              } catch {
+                alert('세금계산서 발행에 실패했습니다. 볼타 API 설정을 확인해주세요.')
+              }
+            }}
+          >
+            <Receipt className="mr-2 h-4 w-4" />
+            세금계산서
           </Button>
           {workspace && (
             <SendEmailDialog

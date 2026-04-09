@@ -17,6 +17,9 @@ import CreditNoteDetail from '@/pages/CreditNoteDetail'
 import Customers from '@/pages/Customers'
 import Products from '@/pages/Products'
 import Categories from '@/pages/Categories'
+import PaymentRequests from '@/pages/PaymentRequests'
+import PaymentRequestForm from '@/pages/PaymentRequestForm'
+import PaymentRequestDetail from '@/pages/PaymentRequestDetail'
 import Statistics from '@/pages/Statistics'
 import SettingsPage from '@/pages/Settings'
 import WorkspaceSetup from '@/pages/WorkspaceSetup'
@@ -50,6 +53,10 @@ export default function App() {
             <Route path="quotes/new" element={<QuoteForm key="new" />} />
             <Route path="quotes/:id" element={<QuoteDetail />} />
             <Route path="quotes/:id/edit" element={<QuoteForm key="edit" />} />
+            <Route path="payment-requests" element={<PaymentRequests />} />
+            <Route path="payment-requests/new" element={<PaymentRequestForm key="new" />} />
+            <Route path="payment-requests/:id" element={<PaymentRequestDetail />} />
+            <Route path="payment-requests/:id/edit" element={<PaymentRequestForm key="edit" />} />
             <Route path="credit-notes" element={<CreditNotes />} />
             <Route path="credit-notes/new" element={<CreditNoteForm key="new" />} />
             <Route path="credit-notes/:id" element={<CreditNoteDetail />} />

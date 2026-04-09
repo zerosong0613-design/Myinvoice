@@ -183,6 +183,43 @@ export interface MonthlyRevenue {
   total: number
 }
 
+export type PaymentRequestStatus = 'draft' | 'sent' | 'paid' | 'cancelled'
+
+export interface PaymentRequest {
+  id: string
+  workspace_id: string
+  request_number: string
+  customer_id: string | null
+  customer_name: string
+  customer_email: string | null
+  customer_biz_number: string | null
+  issued_at: string
+  due_at: string | null
+  status: PaymentRequestStatus
+  subtotal: number
+  withholding_tax: number
+  net_amount: number
+  withholding_rate: number
+  bank_name: string | null
+  account_number: string | null
+  account_holder: string | null
+  memo: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface PaymentRequestItem {
+  id: string
+  payment_request_id: string
+  name: string
+  description: string | null
+  quantity: number
+  unit_price: number
+  amount: number
+  sort_order: number
+}
+
 export type MemberRole = 'owner' | 'admin' | 'member'
 export type InvitationStatus = 'pending' | 'accepted' | 'expired' | 'cancelled'
 

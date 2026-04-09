@@ -14,7 +14,10 @@
       "Bash(clip)",
       "Bash(npx vite:*)",
       "mcp__1dcbe64c-23f1-409b-b2f3-1cb0c6657b35__list_deployments",
-      "mcp__1dcbe64c-23f1-409b-b2f3-1cb0c6657b35__get_deployment_build_logs"
+      "mcp__1dcbe64c-23f1-409b-b2f3-1cb0c6657b35__get_deployment_build_logs",
+      "WebSearch",
+      "WebFetch(domain:api-docs.bolta.io)",
+      "WebFetch(domain:docs.bolta.io)"
     ]
   }
 }

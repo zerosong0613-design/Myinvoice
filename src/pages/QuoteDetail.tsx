@@ -126,7 +126,7 @@ export default function QuoteDetail() {
         </div>
 
         <div className="flex gap-2">
-          {!quote.converted_invoice_id && (
+          {!(quote as Record<string, unknown>).converted_invoice_id && (
             <Button
               size="sm"
               onClick={() =>
@@ -156,11 +156,11 @@ export default function QuoteDetail() {
               청구서로 변환
             </Button>
           )}
-          {quote.converted_invoice_id && (
+          {(quote as Record<string, unknown>).converted_invoice_id && (
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate(`/invoices/${quote.converted_invoice_id}`)}
+              onClick={() => navigate(`/invoices/${(quote as Record<string, unknown>).converted_invoice_id}`)}
             >
               <FileText className="mr-2 h-4 w-4" />
               변환된 청구서 보기

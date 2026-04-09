@@ -150,7 +150,9 @@ export function useInvoices() {
           total = subtotal + taxAmount
         }
 
-        const insertPayload: Record<string, unknown> = {
+        const { data: invoice, error: insertError } = await supabase
+          .from('invoices')
+          .insert({
             workspace_id: workspace.id,
             invoice_number: invoiceNumber,
             customer_id: input.customer_id,
@@ -165,14 +167,7 @@ export function useInvoices() {
             total,
             memo: input.memo,
             created_by: user.id,
-          }
-        if (input.source_quote_id) {
-          insertPayload.source_quote_id = input.source_quote_id
-        }
-
-        const { data: invoice, error: insertError } = await supabase
-          .from('invoices')
-          .insert(insertPayload)
+          })
           .select()
           .single()
 
@@ -195,6 +190,15 @@ export function useInvoices() {
           .insert(invoiceItems)
 
         if (itemsError) throw itemsError
+
+        // 견적서 연결 (마이그레이션 전에는 조용히 실패)
+        if (input.source_quote_id) {
+          await supabase
+            .from('invoices')
+            .update({ source_quote_id: input.source_quote_id } as Record<string, unknown>)
+            .eq('id', invoice.id)
+            .catch(() => {})
+        }
 
         setInvoices((prev) => [invoice as Invoice, ...prev])
         return invoice as Invoice

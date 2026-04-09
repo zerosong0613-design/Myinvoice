@@ -72,12 +72,13 @@ export default function InvoiceDetail() {
           .order('created_at', { ascending: false })
         if (cnData) setRelatedCreditNotes(cnData as CreditNote[])
 
-        // 원본 견적서 조회
-        if (result.invoice.source_quote_id) {
+        // 원본 견적서 조회 (마이그레이션 전에는 source_quote_id가 없을 수 있음)
+        const sqId = (result.invoice as Record<string, unknown>).source_quote_id as string | null
+        if (sqId) {
           const { data: quoteData } = await supabase
             .from('quotes')
             .select('*')
-            .eq('id', result.invoice.source_quote_id)
+            .eq('id', sqId)
             .single()
           if (quoteData) setSourceQuote(quoteData as Quote)
         }
